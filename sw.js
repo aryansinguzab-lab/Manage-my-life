@@ -4,7 +4,8 @@ const assets = [
   './index.html',
   './manifest.json',
   './dexie.js',
-  './chart.js'
+  './chart.js',
+  './icon.png'
 ];
 
 self.addEventListener('install', evt => {
