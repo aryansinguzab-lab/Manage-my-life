@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="manifest.json">
-<title>Life Manager</title>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Manager</title>
+    <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+    
+    
+    <script src="dexie.js"></script>
+    <script src="chart.js"></script>
+    
+    <style>
 :root {
     --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800;
 }
@@ -16,13 +21,17 @@ body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(
 
 .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
 #topBar{margin-bottom:15px; background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border);}
-.failed { background: #f44336; color: white; }
 
+/* Dashboard Border Grouping */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 10px;
     margin-bottom: 20px;
+    padding: 15px;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.02);
 }
 
 .action-card {
@@ -36,6 +45,13 @@ body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(
 }
 .action-card:active { transform: scale(0.95); background: var(--li); }
 .action-card span { font-size: 24px; display: block; margin-bottom: 5px; }
+
+/* Password Toggle Container */
+.pass-container { position: relative; width: 100%; }
+.toggle-btn { 
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%); 
+    background: none; border: none; color: var(--accent); width: auto; padding: 5px; cursor: pointer;
+}
 
 .view-screen { display: none; background:var(--bg); min-height: 100vh; }
 section{background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border); margin-top: 10px;}
@@ -54,11 +70,8 @@ th{background:var(--primary); color:#fff}
 
 .modal{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000}
 .modalContent{background:var(--card); padding:20px; border-radius:15px; width:95%; max-width:450px; box-sizing: border-box; overflow-y: auto; max-height: 90vh;}
-.cat-tag { font-size: 0.7em; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
 .status-pill { font-size: 0.75em; padding: 4px 8px; border-radius: 20px; font-weight: bold; }
-.achieved { background: #4CAF50; color: white; }
 .pending { background: #FF9800; color: white; }
-
 .backup-zone { background: var(--li); padding: 10px; border-radius: 8px; border: 1px dashed var(--border); margin-top: 15px; }
 </style>
 </head>
@@ -67,8 +80,12 @@ th{background:var(--primary); color:#fff}
 <div id="login">
     <section style="width: 300px; text-align: center; border:none;">
         <h2 style="margin-bottom:20px;">MY LIFE MANAGER</h2>
-        <input id="loginPass" type="password" placeholder="Password" autofocus>
+        <div class="pass-container">
+            <input id="loginPass" type="password" placeholder="Enter Password" autofocus>
+            <button type="button" class="toggle-btn" onclick="togglePassword('loginPass')">👁️</button>
+        </div>
         <button onclick="doLogin()">Enter App</button>
+        <p style="font-size: 0.8em; opacity: 0.6;"></p>
     </section>
 </div>
 
@@ -115,29 +132,45 @@ th{background:var(--primary); color:#fff}
         <button onclick="switchView('targetView')" style="background:#0097A7">🎯 Annual Targets</button>
         <button onclick="switchView('cashView')" style="background:var(--accent)">📖 View My Finances</button>
     </div>
-
     <div id="taskView" class="view-screen">
         <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
         <section><h3>My Tasks</h3><ul id="taskList" style="list-style:none; padding:0;"></ul></section>
     </div>
-
     <div id="targetView" class="view-screen">
         <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
         <section><h3>Annual Targets</h3><ul id="targetList" style="list-style:none; padding:0;"></ul></section>
     </div>
+  <div id="cashView" class="view-screen">
+    <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
+    <section>
+        <h3>Finance Ledger</h3>
+        
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <select id="filterMonth" onchange="renderCashBook()" style="flex: 1;">
+                <option value="all">All Months</option>
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
+            <select id="filterYear" onchange="renderCashBook()" style="flex: 1;"></select>
+        </div>
 
-    <div id="cashView" class="view-screen">
-        <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
-        <section>
-            <h3>Finance Ledger (<span id="ledgerYearLabel"></span>) </h3>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Date</th><th>Details</th><th>Amt</th><th>✖</th></tr></thead>
-                    <tbody id="cashRows"></tbody>
-                </table>
-            </div>
-        </section>
-    </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th>Date</th><th>Details</th><th>Amt</th><th>✖</th></tr></thead>
+                <tbody id="cashRows"></tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <div class="modal" id="entryModal"><div class="modalContent">
@@ -175,21 +208,19 @@ th{background:var(--primary); color:#fff}
     <label>User Name:</label>
     <input id="setBizName" placeholder="Your Name">
     <label>Change Password:</label>
-    <input id="newPass" type="password" placeholder="New Password">
+    <div class="pass-container">
+        <input id="newPass" type="password" placeholder="New Password">
+        <button type="button" class="toggle-btn" onclick="togglePassword('newPass')">👁️</button>
+    </div>
     <button onclick="saveSettings()">Apply Changes</button>
     
     <div class="backup-zone">
         <h4>Data Management</h4>
-        <p style="font-size: 0.8em; margin-bottom: 10px;">Keep your data safe by downloading a backup file.</p>
         <button onclick="exportData()" style="background: #607D8B;">💾 Backup to File</button>
-        
         <hr style="margin: 15px 0; border: 0.5px solid var(--border);">
-        
-        <label style="font-size: 0.8em;">Restore from backup:</label>
         <input type="file" id="importFile" accept=".json" style="font-size: 0.7em; padding: 5px;">
         <button onclick="importData()" style="background: var(--warn);">📥 Restore Data</button>
     </div>
-    
     <button onclick="closeModal('settingsModal')" style="background:#636e72; margin-top: 15px;">Close</button>
 </div></div>
 
@@ -200,12 +231,9 @@ th{background:var(--primary); color:#fff}
     <button onclick="closeModal('reportModal')" style="background:#f44336; margin-top:15px;">Close</button>
 </div></div>
 
-<script src="chart.js"></script>
-<script src="dexie.js"></script>
-
 <script>
 const db = new Dexie("LifeManagerDB");
-db.version(1).stores({
+db.version(2).stores({
     tasks: '++id, date, completed',
     entries: '++id, d, t',
     targets: '++id, date, status',
@@ -217,85 +245,52 @@ let security = {p:"1234"};
 let myChart = null;
 const currentYear = new Date().getFullYear();
 
-async function initApp() {
-    try {
-        const s = await db.config.get('settings');
-        const sec = await db.config.get('security');
-        if(s) settings = s.val;
-        if(sec) security = sec.val;
-        applySettingsUI();
-        initReportYears();
-    } catch(e) { console.error("DB Init failed", e); }
+// Toggle Password visibility
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
 }
 
-// --- BACKUP & RESTORE LOGIC ---
 
 async function exportData() {
-    const allTasks = await db.tasks.toArray();
-    const allEntries = await db.entries.toArray();
-    const allTargets = await db.targets.toArray();
-    const allConfig = await db.config.toArray();
-
     const backupData = {
-        tasks: allTasks,
-        entries: allEntries,
-        targets: allTargets,
-        config: allConfig,
-        version: 1,
+        tasks: await db.tasks.toArray(),
+        entries: await db.entries.toArray(),
+        targets: await db.targets.toArray(),
+        config: await db.config.toArray(),
         date: new Date().toISOString()
     };
-
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lifemanager_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `lifemanager_backup.json`;
     a.click();
-    URL.revokeObjectURL(url);
 }
 
 async function importData() {
     const fileInput = document.getElementById('importFile');
-    if (!fileInput.files[0]) return alert("Please select a backup file first.");
-
-    if (!confirm("This will overwrite your current data. Are you sure?")) return;
-
+    if (!fileInput.files[0]) return alert("Select a file first.");
     const reader = new FileReader();
     reader.onload = async (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            
-            // Clear current data
-            await db.tasks.clear();
-            await db.entries.clear();
-            await db.targets.clear();
-            await db.config.clear();
-
-            // Import new data
-            if(data.tasks) await db.tasks.bulkAdd(data.tasks);
-            if(data.entries) await db.entries.bulkAdd(data.entries);
-            if(data.targets) await db.targets.bulkAdd(data.targets);
-            if(data.config) await db.config.bulkAdd(data.config);
-
-            alert("Restore Successful! The app will now reload.");
-            location.reload();
-        } catch (err) {
-            alert("Error importing data. Make sure it's a valid backup file.");
-            console.error(err);
-        }
+        const data = JSON.parse(e.target.result);
+        await db.tasks.clear(); await db.entries.clear(); await db.targets.clear(); await db.config.clear();
+        if(data.tasks) await db.tasks.bulkAdd(data.tasks);
+        if(data.entries) await db.entries.bulkAdd(data.entries);
+        if(data.targets) await db.targets.bulkAdd(data.targets);
+        if(data.config) await db.config.bulkAdd(data.config);
+        location.reload();
     };
     reader.readAsText(fileInput.files[0]);
 }
 
-// --- Existing Functions ---
-
 function initReportYears() {
     const sel = document.getElementById('reportYearSelect');
     let options = "";
-    for(let i = 2024; i <= 2060; i++) {
+    for(let i = 2024; i <= 2030; i++) {
         options += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`;
     }
-    if(sel) sel.innerHTML = options;
+    sel.innerHTML = options;
 }
 
 function doLogin() {
@@ -314,50 +309,159 @@ async function refreshAllUI() {
     renderTargets(currentYear);
 }
 
+
+
 async function submitEntry() {
-    const desc = document.getElementById("entDesc").value, amt = document.getElementById("entAmt").value;
-    if (!desc || !amt) return;
-    await db.entries.add({ d: getToday(), desc, t: document.getElementById("entType").value, a: parseFloat(amt), c: document.getElementById("entCat").value });
-    closeModal('entryModal'); renderCashBook(currentYear);
+    const descEl = document.getElementById("entDesc");
+    const amtEl = document.getElementById("entAmt");
+    const catEl = document.getElementById("entCat");
+    
+    if (!descEl.value || !amtEl.value) return;
+
+    await db.entries.add({ 
+        d: getToday(), 
+        desc: descEl.value, 
+        t: document.getElementById("entType").value, 
+        a: parseFloat(amtEl.value), 
+        c: catEl.value 
+    });
+
+    // Clear Fields
+    descEl.value = "";
+    amtEl.value = "";
+    catEl.selectedIndex = 0;
+
+    closeModal('entryModal'); 
+    renderCashBook(currentYear);
 }
 
 async function submitTask() {
-    const title = document.getElementById("taskInTitle").value;
-    if (!title) return;
-    await db.tasks.add({title, completed: false, date: getToday()});
-    closeModal('taskModal'); renderTasks(currentYear);
+    const titleEl = document.getElementById("taskInTitle");
+    const notesEl = document.getElementById("taskInNotes");
+
+    if (!titleEl.value) return;
+
+    await db.tasks.add({
+        title: titleEl.value, 
+        completed: false, 
+        date: getToday(),
+        notes: notesEl.value
+    });
+
+    // Clear Fields
+    titleEl.value = "";
+    notesEl.value = "";
+
+    closeModal('taskModal'); 
+    renderTasks(currentYear);
 }
 
 async function submitTarget() {
-    const title = document.getElementById("targetInTitle").value;
-    if (!title) return;
-    await db.targets.add({title, status: 'pending', date: getToday()});
-    closeModal('targetModal'); renderTargets(currentYear);
+    const titleEl = document.getElementById("targetInTitle");
+
+    if (!titleEl.value) return;
+
+    await db.targets.add({
+        title: titleEl.value, 
+        status: 'pending', 
+        date: getToday()
+    });
+
+    // Clear Field
+    titleEl.value = "";
+
+    closeModal('targetModal'); 
+    renderTargets(currentYear);
 }
 
-async function renderCashBook(year) {
+async function renderTasks(year) {
+    const list = document.getElementById("taskList");
+    // Get current year from filter if you want tasks separated by year, 
+    // otherwise this shows all tasks.
+    const all = await db.tasks.toArray();
+    
+    list.innerHTML = all.map(t => `<li style="background:var(--li); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">${t.title}</span>
+        <div style="display: flex; gap: 5px;">
+            <button onclick="toggleTask(${t.id})" style="width:auto; background:var(--accent); padding:5px 10px; margin:0;">
+                ${t.completed ? '↩️' : '✅'}
+            </button> 
+            <button onclick="delTask(${t.id})" style="width:auto; background:#f44336; padding:5px 10px; margin:0;">
+                🗑️
+            </button>
+        </div>
+    </li>`).join('');
+}
+
+
+
+async function initApp() {
+    try {
+        const s = await db.config.get('settings');
+        const sec = await db.config.get('security');
+        if(s) settings = s.val;
+        if(sec) security = sec.val;
+        
+        // Populate Year Dropdown up to 2100
+        const yearSel = document.getElementById('filterYear');
+        if (yearSel) {
+            let yearOpts = "";
+            for(let i = 2024; i <= 2100; i++) {
+                yearOpts += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`;
+            }
+            yearSel.innerHTML = yearOpts;
+        }
+
+        applySettingsUI();
+        initReportYears();
+        
+        // Initial render of the ledger data
+        renderCashBook(); 
+
+    } catch(e) { 
+        console.error("DB Init failed", e); 
+    }
+}
+
+// 2. Updated renderCashBook to handle Month and Year filters
+
+
+async function renderCashBook() {
     const body = document.getElementById("cashRows");
-    document.getElementById('ledgerYearLabel').innerText = year;
+    const filterYear = document.getElementById("filterYear");
+    const filterMonth = document.getElementById("filterMonth");
+
+    // Safety check: if filters don't exist yet, stop
+    if (!filterYear || !filterMonth) return;
+
+    const selYear = parseInt(filterYear.value);
+    const selMonth = filterMonth.value; 
+    
     let inc = 0, exp = 0;
     const all = await db.entries.toArray();
-    body.innerHTML = all.filter(en => new Date(en.d).getFullYear() === year).map(en => {
+    
+    body.innerHTML = all.filter(en => {
+        const entryDate = new Date(en.d);
+        const matchYear = entryDate.getFullYear() === selYear;
+        const matchMonth = (selMonth === "all") || (entryDate.getMonth() === parseInt(selMonth));
+        return matchYear && matchMonth;
+    }).map(en => {
         const val = Number(en.a) || 0;
         en.t === "income" ? inc += val : exp += val;
-        return `<tr><td><small>${en.d}</small></td><td>${en.desc}</td><td style="color:${en.t==='income'?'green':'red'}">${val.toLocaleString()}</td><td><button onclick="delEntry(${en.id})" style="background:red;width:auto;">X</button></td></tr>`;
+        return `<tr>
+            <td><small>${en.d}</small></td>
+            <td>${en.desc} <br><span class="cat-tag" style="background:var(--li); color:var(--text); border:1px solid var(--border);">${en.c || 'General'}</span></td>
+            <td style="color:${en.t==='income'?'green':'red'}">${val.toLocaleString()}</td>
+            <td><button onclick="delEntry(${en.id})" style="background:red;width:auto;padding:5px 10px; margin:0;">X</button></td>
+        </tr>`;
     }).reverse().join('');
+
+    // Update Summary Boxes
     document.getElementById("totalInc").innerText = inc.toLocaleString();
     document.getElementById("totalExp").innerText = exp.toLocaleString();
     document.getElementById("totalBal").innerText = (inc - exp).toLocaleString();
 }
 
-async function renderTasks(year) {
-    const list = document.getElementById("taskList");
-    const all = await db.tasks.toArray();
-    list.innerHTML = all.map(t => `<li style="background:var(--li); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">${t.title}</span>
-        <div><button onclick="toggleTask(${t.id})" style="width:auto; background:blue; padding:5px;">✓</button> <button onclick="delTask(${t.id})" style="width:auto; background:red; padding:5px;">X</button></div>
-    </li>`).join('');
-}
 
 async function renderTargets(year) {
     const list = document.getElementById("targetList");
