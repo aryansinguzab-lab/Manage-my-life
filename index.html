@@ -6,7 +6,6 @@
     <title>Life Manager</title>
     <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
     
-    
     <script src="dexie.js"></script>
     <script src="chart.js"></script>
     
@@ -19,10 +18,24 @@
 }
 body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(--text); padding:10px; margin:0; transition: 0.3s;}
 
+/* Status Colors */
+.status-pill.pending { background: #FF9800; color: white; }
+.status-pill.completed { background: #4CAF50; color: white; }
+.status-pill.failed { background:red; color: white; }
+
+.status-btn { 
+    border: none; 
+    border-radius: 20px; 
+    padding: 4px 12px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 0.75em;
+    transition: 0.2s;
+}
+
 .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
 #topBar{margin-bottom:15px; background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border);}
 
-/* Dashboard Border Grouping */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -46,7 +59,6 @@ body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(
 .action-card:active { transform: scale(0.95); background: var(--li); }
 .action-card span { font-size: 24px; display: block; margin-bottom: 5px; }
 
-/* Password Toggle Container */
 .pass-container { position: relative; width: 100%; }
 .toggle-btn { 
     position: absolute; right: 10px; top: 50%; transform: translateY(-50%); 
@@ -57,7 +69,7 @@ body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(
 section{background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border); margin-top: 10px;}
 
 button{cursor:pointer; background:var(--primary); color:white; border:none; font-weight:bold; padding:12px; border-radius:8px; width:100%; margin: 5px 0;}
-.back-btn { background: #f44336; margin-bottom: 15px; }
+.back-btn { background: #CD5C5C; margin-bottom: 15px; }
 
 input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; font-family: inherit; }
 
@@ -85,7 +97,6 @@ th{background:var(--primary); color:#fff}
             <button type="button" class="toggle-btn" onclick="togglePassword('loginPass')">👁️</button>
         </div>
         <button onclick="doLogin()">Enter App</button>
-        <p style="font-size: 0.8em; opacity: 0.6;"></p>
     </section>
 </div>
 
@@ -94,7 +105,7 @@ th{background:var(--primary); color:#fff}
         <div id="topBar">
             <div class="top-row">
                 <button onclick="toggleTheme()" style="width:auto; background:#9C27B0; padding:8px 15px; margin:0;">🌓 Theme</button>
-                <button onclick="doLogout()" style="width:auto; background:#f44336; padding:8px 15px; margin:0;">Exit</button>
+                <button onclick="doLogout()" style="width:auto; background:#CD5C5C; padding:8px 15px; margin:0;">Exit</button>
             </div>
             <div style="text-align: center;">
                 <strong id="dispName" style="font-size: 1.3em; color: var(--primary);">My Life Manager</strong>
@@ -132,6 +143,7 @@ th{background:var(--primary); color:#fff}
         <button onclick="switchView('targetView')" style="background:#0097A7">🎯 Annual Targets</button>
         <button onclick="switchView('cashView')" style="background:var(--accent)">📖 View My Finances</button>
     </div>
+
     <div id="taskView" class="view-screen">
         <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
         <section><h3>My Tasks</h3><ul id="taskList" style="list-style:none; padding:0;"></ul></section>
@@ -140,37 +152,28 @@ th{background:var(--primary); color:#fff}
         <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
         <section><h3>Annual Targets</h3><ul id="targetList" style="list-style:none; padding:0;"></ul></section>
     </div>
-  <div id="cashView" class="view-screen">
-    <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
-    <section>
-        <h3>Finance Ledger</h3>
-        
-        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-            <select id="filterMonth" onchange="renderCashBook()" style="flex: 1;">
-                <option value="all">All Months</option>
-                <option value="0">January</option>
-                <option value="1">February</option>
-                <option value="2">March</option>
-                <option value="3">April</option>
-                <option value="4">May</option>
-                <option value="5">June</option>
-                <option value="6">July</option>
-                <option value="7">August</option>
-                <option value="8">September</option>
-                <option value="9">October</option>
-                <option value="10">November</option>
-                <option value="11">December</option>
-            </select>
-            <select id="filterYear" onchange="renderCashBook()" style="flex: 1;"></select>
-        </div>
-
-        <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>Date</th><th>Details</th><th>Amt</th><th>✖</th></tr></thead>
-                <tbody id="cashRows"></tbody>
-            </table>
-        </div>
-    </section>
+    <div id="cashView" class="view-screen">
+        <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
+        <section>
+            <h3>Finance Ledger</h3>
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <select id="filterMonth" onchange="renderCashBook()" style="flex: 1;">
+                    <option value="all">All Months</option>
+                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                </select>
+                <select id="filterYear" onchange="renderCashBook()" style="flex: 1;"></select>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Date</th><th>Details</th><th>Amt</th><th>✖</th></tr></thead>
+                    <tbody id="cashRows"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
 </div>
 
 <div class="modal" id="entryModal"><div class="modalContent">
@@ -179,7 +182,7 @@ th{background:var(--primary); color:#fff}
     <input id="entAmt" type="number" placeholder="Amount">
     <select id="entCat">
         <option value="General">General</option>
-        <option value="Bills">Bills</option>
+        <option value="Business">Business</option>
         <option value="Personal">Personal</option>
     </select>
     <input type="hidden" id="entType">
@@ -190,7 +193,7 @@ th{background:var(--primary); color:#fff}
 <div class="modal" id="taskModal"><div class="modalContent">
     <h3>New Task</h3>
     <input id="taskInTitle" placeholder="Task Name">
-    <select id="taskInCat"><option value="General">General</option></select>
+    <select id="taskInCat"><option value="General">General</option><option value="Business">Business</option><option value="Voluntary">Voluntary</option></select>
     <textarea id="taskInNotes" placeholder="Notes..." rows="2"></textarea>
     <button onclick="submitTask()" style="background:var(--warn)">Save Task</button>
     <button onclick="closeModal('taskModal')" style="background:#636e72">Cancel</button>
@@ -213,7 +216,6 @@ th{background:var(--primary); color:#fff}
         <button type="button" class="toggle-btn" onclick="togglePassword('newPass')">👁️</button>
     </div>
     <button onclick="saveSettings()">Apply Changes</button>
-    
     <div class="backup-zone">
         <h4>Data Management</h4>
         <button onclick="exportData()" style="background: #607D8B;">💾 Backup to File</button>
@@ -231,6 +233,14 @@ th{background:var(--primary); color:#fff}
     <button onclick="closeModal('reportModal')" style="background:#f44336; margin-top:15px;">Close</button>
 </div></div>
 
+<div class="modal" id="customAlertModal">
+    <div class="modalContent" style="text-align: center; max-width: 300px;">
+        <h3 id="alertTitle" style="margin-top: 0;">Notification</h3>
+        <p id="alertMessage"></p>
+        <button onclick="closeModal('customAlertModal')" style="background:var(--accent)">Okay</button>
+    </div>
+</div>
+
 <script>
 const db = new Dexie("LifeManagerDB");
 db.version(2).stores({
@@ -245,12 +255,10 @@ let security = {p:"1234"};
 let myChart = null;
 const currentYear = new Date().getFullYear();
 
-// Toggle Password visibility
 function togglePassword(id) {
     const input = document.getElementById(id);
     input.type = input.type === "password" ? "text" : "password";
 }
-
 
 async function exportData() {
     const backupData = {
@@ -270,7 +278,7 @@ async function exportData() {
 
 async function importData() {
     const fileInput = document.getElementById('importFile');
-    if (!fileInput.files[0]) return alert("Select a file first.");
+    if (!fileInput.files[0]) return showAlert("Select a file first.");
     const reader = new FileReader();
     reader.onload = async (e) => {
         const data = JSON.parse(e.target.result);
@@ -284,10 +292,17 @@ async function importData() {
     reader.readAsText(fileInput.files[0]);
 }
 
+// Fixed Alert Function
+function showAlert(message, title = "Notification") {
+    document.getElementById('alertTitle').innerText = title;
+    document.getElementById('alertMessage').innerText = message;
+    openModal('customAlertModal');
+}
+
 function initReportYears() {
     const sel = document.getElementById('reportYearSelect');
     let options = "";
-    for(let i = 2024; i <= 2030; i++) {
+    for(let i = 2024; i <= 2100; i++) {
         options += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`;
     }
     sel.innerHTML = options;
@@ -298,102 +313,57 @@ function doLogin() {
         document.getElementById("login").style.display = "none";
         document.getElementById("app").style.display = "block";
         refreshAllUI();
-    } else { alert("Access Denied"); }
+    } else { 
+        showAlert("Access Denied", "Error"); 
+    }
 }
 
 function getToday() { return new Date().toISOString().split("T")[0]; }
 
 async function refreshAllUI() {
-    renderTasks(currentYear);
-    renderCashBook(currentYear);
-    renderTargets(currentYear);
+    renderTasks();
+    renderCashBook();
+    renderTargets();
 }
-
-
 
 async function submitEntry() {
     const descEl = document.getElementById("entDesc");
     const amtEl = document.getElementById("entAmt");
     const catEl = document.getElementById("entCat");
-    
     if (!descEl.value || !amtEl.value) return;
-
     await db.entries.add({ 
-        d: getToday(), 
-        desc: descEl.value, 
-        t: document.getElementById("entType").value, 
-        a: parseFloat(amtEl.value), 
-        c: catEl.value 
+        d: getToday(), desc: descEl.value, t: document.getElementById("entType").value, 
+        a: parseFloat(amtEl.value), c: catEl.value 
     });
-
-    // Clear Fields
-    descEl.value = "";
-    amtEl.value = "";
-    catEl.selectedIndex = 0;
-
-    closeModal('entryModal'); 
-    renderCashBook(currentYear);
+    descEl.value = ""; amtEl.value = ""; closeModal('entryModal'); renderCashBook();
 }
 
 async function submitTask() {
     const titleEl = document.getElementById("taskInTitle");
     const notesEl = document.getElementById("taskInNotes");
-
     if (!titleEl.value) return;
-
-    await db.tasks.add({
-        title: titleEl.value, 
-        completed: false, 
-        date: getToday(),
-        notes: notesEl.value
-    });
-
-    // Clear Fields
-    titleEl.value = "";
-    notesEl.value = "";
-
-    closeModal('taskModal'); 
-    renderTasks(currentYear);
+    await db.tasks.add({ title: titleEl.value, completed: false, date: getToday(), notes: notesEl.value });
+    titleEl.value = ""; notesEl.value = ""; closeModal('taskModal'); renderTasks();
 }
 
 async function submitTarget() {
     const titleEl = document.getElementById("targetInTitle");
-
     if (!titleEl.value) return;
-
-    await db.targets.add({
-        title: titleEl.value, 
-        status: 'pending', 
-        date: getToday()
-    });
-
-    // Clear Field
-    titleEl.value = "";
-
-    closeModal('targetModal'); 
-    renderTargets(currentYear);
+    await db.targets.add({ title: titleEl.value, status: 'pending', date: getToday() });
+    titleEl.value = ""; closeModal('targetModal'); renderTargets();
 }
 
-async function renderTasks(year) {
+async function renderTasks() {
     const list = document.getElementById("taskList");
-    // Get current year from filter if you want tasks separated by year, 
-    // otherwise this shows all tasks.
     const all = await db.tasks.toArray();
-    
     list.innerHTML = all.map(t => `<li style="background:var(--li); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
         <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">${t.title}</span>
         <div style="display: flex; gap: 5px;">
-            <button onclick="toggleTask(${t.id})" style="width:auto; background:var(--accent); padding:5px 10px; margin:0;">
-                ${t.completed ? '↩️' : '✅'}
-            </button> 
-            <button onclick="delTask(${t.id})" style="width:auto; background:#f44336; padding:5px 10px; margin:0;">
-                🗑️
-            </button>
+            <button onclick="toggleTask(${t.id})" style="width:auto; background:var(--accent); padding:5px 10px; margin:0;">${t.completed ? '↩️' : '✅'}</button> 
+            <button onclick="delTask(${t.id})" style="width:auto; background:#f44336; padding:5px 10px; margin:0;">🗑️</button>
         </div>
     </li>`).join('');
 }
-
-
 
 async function initApp() {
     try {
@@ -401,45 +371,27 @@ async function initApp() {
         const sec = await db.config.get('security');
         if(s) settings = s.val;
         if(sec) security = sec.val;
-        
-        // Populate Year Dropdown up to 2100
         const yearSel = document.getElementById('filterYear');
         if (yearSel) {
             let yearOpts = "";
-            for(let i = 2024; i <= 2100; i++) {
-                yearOpts += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`;
-            }
+            for(let i = 2024; i <= 2100; i++) { yearOpts += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`; }
             yearSel.innerHTML = yearOpts;
         }
-
         applySettingsUI();
         initReportYears();
-        
-        // Initial render of the ledger data
         renderCashBook(); 
-
-    } catch(e) { 
-        console.error("DB Init failed", e); 
-    }
+    } catch(e) { console.error("DB Init failed", e); }
 }
-
-// 2. Updated renderCashBook to handle Month and Year filters
-
 
 async function renderCashBook() {
     const body = document.getElementById("cashRows");
     const filterYear = document.getElementById("filterYear");
     const filterMonth = document.getElementById("filterMonth");
-
-    // Safety check: if filters don't exist yet, stop
     if (!filterYear || !filterMonth) return;
-
     const selYear = parseInt(filterYear.value);
     const selMonth = filterMonth.value; 
-    
     let inc = 0, exp = 0;
     const all = await db.entries.toArray();
-    
     body.innerHTML = all.filter(en => {
         const entryDate = new Date(en.d);
         const matchYear = entryDate.getFullYear() === selYear;
@@ -450,28 +402,50 @@ async function renderCashBook() {
         en.t === "income" ? inc += val : exp += val;
         return `<tr>
             <td><small>${en.d}</small></td>
-            <td>${en.desc} <br><span class="cat-tag" style="background:var(--li); color:var(--text); border:1px solid var(--border);">${en.c || 'General'}</span></td>
+            <td>${en.desc} <br><span style="font-size:0.7em; background:var(--li); padding:2px 5px; border-radius:4px;">${en.c || 'General'}</span></td>
             <td style="color:${en.t==='income'?'green':'red'}">${val.toLocaleString()}</td>
             <td><button onclick="delEntry(${en.id})" style="background:red;width:auto;padding:5px 10px; margin:0;">X</button></td>
         </tr>`;
     }).reverse().join('');
-
-    // Update Summary Boxes
     document.getElementById("totalInc").innerText = inc.toLocaleString();
     document.getElementById("totalExp").innerText = exp.toLocaleString();
     document.getElementById("totalBal").innerText = (inc - exp).toLocaleString();
 }
 
-
-async function renderTargets(year) {
+async function renderTargets() {
     const list = document.getElementById("targetList");
     const all = await db.targets.toArray();
-    list.innerHTML = all.map(t => `<li style="background:var(--li); margin:8px 0; padding:12px; border-radius:8px;">${t.title} <span class="status-pill pending">${t.status}</span></li>`).join('');
+    list.innerHTML = all.map(t => {
+        const statusClass = t.status || 'pending';
+        return `<li style="background:var(--card); border: 1px solid var(--border); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span>${t.title}</span>
+            <div style="display: flex; gap: 8px;">
+                <button class="status-btn ${statusClass}" onclick="cycleTargetStatus(${t.id}, '${statusClass}')">${statusClass.toUpperCase()}</button>
+                <button onclick="delTarget(${t.id})" style="width:auto; background:none; color:#f44336; padding:5px; border:none; font-size:1.2em;">🗑️</button>
+            </div>
+        </li>`;
+    }).reverse().join('');
 }
 
-async function toggleTask(id) { const t = await db.tasks.get(id); await db.tasks.update(id, {completed: !t.completed}); renderTasks(currentYear); }
-async function delTask(id) { await db.tasks.delete(id); renderTasks(currentYear); }
-async function delEntry(id) { await db.entries.delete(id); renderCashBook(currentYear); }
+async function cycleTargetStatus(id, currentStatus) {
+    let nextStatus = currentStatus === 'pending' ? 'completed' : (currentStatus === 'completed' ? 'failed' : 'pending');
+    await db.targets.update(id, { status: nextStatus });
+    renderTargets();
+}
+
+async function delTarget(id) { if(confirm("Delete?")) { await db.targets.delete(id); renderTargets(); } }
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = "flex";
+  else console.error("Modal not found:", id);
+}
+
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+async function toggleTask(id) { const t = await db.tasks.get(id); await db.tasks.update(id, {completed: !t.completed}); renderTasks(); }
+async function delTask(id) { await db.tasks.delete(id); renderTasks(); }
+async function delEntry(id) { await db.entries.delete(id); renderCashBook(); }
 
 async function saveSettings() {
     settings.name = document.getElementById('setBizName').value;
@@ -479,12 +453,11 @@ async function saveSettings() {
     if(np.trim()) { security.p = np; await db.config.put({key: 'security', val: security}); }
     await db.config.put({key: 'settings', val: settings});
     applySettingsUI(); closeModal('settingsModal');
+    showAlert("Settings Saved!");
 }
 
 function applySettingsUI() { document.getElementById('dispName').innerText = settings.name; document.getElementById('setBizName').value = settings.name; }
 function switchView(id) { ['mainDashboard', 'taskView', 'targetView', 'cashView'].forEach(v => document.getElementById(v).style.display = (v === id) ? 'block' : 'none'); }
-function openModal(id) { document.getElementById(id).style.display = "flex"; }
-function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function openEntryModal(t) { document.getElementById('entType').value = t; openModal('entryModal'); }
 function openTaskModal() { openModal('taskModal'); }
 function openTargetModal() { openModal('targetModal'); }
