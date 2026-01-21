@@ -4,88 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Manager</title>
-    <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
-    
-    <script src="dexie.js"></script>
-    <script src="chart.js"></script>
-    
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-:root {
-    --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800;
-}
-[data-theme="dark"] {
-    --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; --li: #2d2d2d; --primary: #66bb6a; --accent: #64b5f6;
-}
-body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(--text); padding:10px; margin:0; transition: 0.3s;}
-
-/* Status Colors */
-.status-pill.pending { background: #FF9800; color: white; }
-.status-pill.completed { background: #4CAF50; color: white; }
-.status-pill.failed { background:red; color: white; }
-
-.status-btn { 
-    border: none; 
-    border-radius: 20px; 
-    padding: 4px 12px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    font-size: 0.75em;
-    transition: 0.2s;
-}
-
-.top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
-#topBar{margin-bottom:15px; background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border);}
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    background: rgba(0,0,0,0.02);
-}
-
-.action-card {
-    background: var(--card);
-    padding: 15px 5px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    border: 1px solid var(--border);
-}
-.action-card:active { transform: scale(0.95); background: var(--li); }
-.action-card span { font-size: 24px; display: block; margin-bottom: 5px; }
-
-.pass-container { position: relative; width: 100%; }
-.toggle-btn { 
-    position: absolute; right: 10px; top: 50%; transform: translateY(-50%); 
-    background: none; border: none; color: var(--accent); width: auto; padding: 5px; cursor: pointer;
-}
-
-.view-screen { display: none; background:var(--bg); min-height: 100vh; }
-section{background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border); margin-top: 10px;}
-
-button{cursor:pointer; background:var(--primary); color:white; border:none; font-weight:bold; padding:12px; border-radius:8px; width:100%; margin: 5px 0;}
-.back-btn { background: #CD5C5C; margin-bottom: 15px; }
-
-input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; font-family: inherit; }
-
-table{width:100%; border-collapse:collapse; margin-top:10px; font-size: 0.85em;}
-th,td{border:1px solid var(--border); padding:10px; text-align:center}
-th{background:var(--primary); color:#fff}
-
-.summary-box { display: flex; justify-content: space-around; background: var(--li); padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border: 1px solid var(--border); }
-#login{position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999}
-
-.modal{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000}
-.modalContent{background:var(--card); padding:20px; border-radius:15px; width:95%; max-width:450px; box-sizing: border-box; overflow-y: auto; max-height: 90vh;}
-.status-pill { font-size: 0.75em; padding: 4px 8px; border-radius: 20px; font-weight: bold; }
-.pending { background: #FF9800; color: white; }
-.backup-zone { background: var(--li); padding: 10px; border-radius: 8px; border: 1px dashed var(--border); margin-top: 15px; }
-</style>
+        :root { --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800; }
+        [data-theme="dark"] { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; --li: #2d2d2d; --primary: #66bb6a; --accent: #64b5f6; }
+        body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(--text); padding:10px; margin:0; transition: 0.3s;}
+        .status-btn { border: none; border-radius: 20px; padding: 4px 12px; cursor: pointer; font-weight: bold; font-size: 0.75em; }
+        .status-btn.pending { background: #FF9800; color: white; }
+        .status-btn.completed { background: #4CAF50; color: white; }
+        .status-btn.failed { background: #f44336; color: white; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
+        #topBar{margin-bottom:15px; background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border);}
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; padding: 15px; border: 2px solid var(--border); border-radius: 16px; background: rgba(0,0,0,0.02); }
+        .action-card { background: var(--card); padding: 15px 5px; border-radius: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .action-card:active { transform: scale(0.95); background: var(--li); }
+        .action-card span { font-size: 24px; display: block; margin-bottom: 5px; }
+        .view-screen { display: none; background:var(--bg); min-height: 100vh; }
+        section{background:var(--card); padding:15px; border-radius:12px; border: 1px solid var(--border); margin-top: 10px;}
+        button{cursor:pointer; background:var(--primary); color:white; border:none; font-weight:bold; padding:12px; border-radius:8px; width:100%; margin: 5px 0;}
+        .back-btn { background: #CD5C5C; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; }
+        table{width:100%; border-collapse:collapse; margin-top:10px; font-size: 0.85em;}
+        th,td{border:1px solid var(--border); padding:10px; text-align:center}
+        th{background:var(--primary); color:#fff}
+        .summary-box { display: flex; justify-content: space-around; background: var(--li); padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border: 1px solid var(--border); }
+        #login{position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999}
+        .modal{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000}
+        .modalContent{background:var(--card); padding:20px; border-radius:15px; width:95%; max-width:450px; box-sizing: border-box; overflow-y: auto; max-height: 90vh;}
+        .pass-container { position: relative; width: 100%; }
+        .toggle-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--accent); width: auto; padding: 5px; cursor: pointer; }
+        .backup-zone { background: var(--li); padding: 10px; border-radius: 8px; border: 1px dashed var(--border); margin-top: 15px; }
+    </style>
 </head>
 <body>
 
@@ -101,7 +51,7 @@ th{background:var(--primary); color:#fff}
 </div>
 
 <div id="app" style="display:none">
-    <div id="mainDashboard">
+    <div id="mainDashboard" class="view-screen" style="display:block">
         <div id="topBar">
             <div class="top-row">
                 <button onclick="toggleTheme()" style="width:auto; background:#9C27B0; padding:8px 15px; margin:0;">🌓 Theme</button>
@@ -113,24 +63,12 @@ th{background:var(--primary); color:#fff}
         </div>
 
         <div class="dashboard-grid">
-            <div class="action-card" onclick="openEntryModal('income')" style="border-top: 4px solid #4CAF50;">
-                <span>💰</span><b>Record Income</b>
-            </div>
-            <div class="action-card" onclick="openEntryModal('expense')" style="border-top: 4px solid #F44336;">
-                <span>💸</span><b>Record Expenses</b>
-            </div>
-            <div class="action-card" onclick="openTaskModal()" style="border-top: 4px solid #FF9800;">
-                <span>📝</span><b>Record To-Do</b>
-            </div>
-            <div class="action-card" onclick="openTargetModal()" style="border-top: 4px solid #00BCD4;">
-                <span>🎯</span><b>Annual Target</b>
-            </div>
-            <div class="action-card" onclick="showYearlyReport()" style="border-top: 4px solid #2196F3;">
-                <span>📊</span><b>Report</b>
-            </div>
-            <div class="action-card" onclick="openModal('settingsModal')" style="border-top: 4px solid #607D8B;">
-                <span>⚙️</span><b>Settings</b>
-            </div>
+            <div class="action-card" onclick="openEntryModal('income')" style="border-top: 4px solid #4CAF50;"><span>💰</span><b>Income</b></div>
+            <div class="action-card" onclick="openEntryModal('expense')" style="border-top: 4px solid #F44336;"><span>💸</span><b>Expenses</b></div>
+            <div class="action-card" onclick="openTaskModal()" style="border-top: 4px solid #FF9800;"><span>📝</span><b>To-Do</b></div>
+            <div class="action-card" onclick="openTargetModal()" style="border-top: 4px solid #00BCD4;"><span>🎯</span><b>Target</b></div>
+            <div class="action-card" onclick="showYearlyReport()" style="border-top: 4px solid #2196F3;"><span>📊</span><b>Report</b></div>
+            <div class="action-card" onclick="openModal('settingsModal')" style="border-top: 4px solid #607D8B;"><span>⚙️</span><b>Settings</b></div>
         </div>
 
         <div class="summary-box">
@@ -148,21 +86,23 @@ th{background:var(--primary); color:#fff}
         <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
         <section><h3>My Tasks</h3><ul id="taskList" style="list-style:none; padding:0;"></ul></section>
     </div>
+
     <div id="targetView" class="view-screen">
-        <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
+        <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
         <section><h3>Annual Targets</h3><ul id="targetList" style="list-style:none; padding:0;"></ul></section>
     </div>
+
     <div id="cashView" class="view-screen">
-        <button class="back-btn" onclick="switchView('mainDashboard')"> Back to Dashboard</button>
+        <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
         <section>
             <h3>Finance Ledger</h3>
             <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                 <select id="filterMonth" onchange="renderCashBook()" style="flex: 1;">
                     <option value="all">All Months</option>
-                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
-                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
-                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
-                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                    <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+                    <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+                    <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+                    <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
                 </select>
                 <select id="filterYear" onchange="renderCashBook()" style="flex: 1;"></select>
             </div>
@@ -176,26 +116,15 @@ th{background:var(--primary); color:#fff}
     </div>
 </div>
 
-<div class="modal" id="entryModal"><div class="modalContent">
-    <h3 id="entryTitle">Add Entry</h3>
-    <input id="entDesc" placeholder="Description?">
-    <input id="entAmt" type="number" placeholder="Amount">
-    <select id="entCat">
-        <option value="General">General</option>
-        <option value="Business">Business</option>
-        <option value="Personal">Personal</option>
-    </select>
-    <input type="hidden" id="entType">
-    <button onclick="submitEntry()">Add to Record</button>
-    <button onclick="closeModal('entryModal')" style="background:#636e72">Cancel</button>
-</div></div>
-
 <div class="modal" id="taskModal"><div class="modalContent">
     <h3>New Task</h3>
     <input id="taskInTitle" placeholder="Task Name">
-    <select id="taskInCat"><option value="General">General</option><option value="Business">Business</option><option value="Voluntary">Voluntary</option></select>
+    <label style="font-size: 0.8rem;">Due Date & Time:</label>
+    <input type="datetime-local" id="taskInDue" onchange="updateDuePreview()">
+    <p id="duePreview" style="font-size: 0.9rem; color: var(--warn);"></p>
+    <select id="taskInCat"><option value="General">General</option><option value="Business">Business</option></select>
     <textarea id="taskInNotes" placeholder="Notes..." rows="2"></textarea>
-    <button onclick="submitTask()" style="background:var(--warn)">Save Task</button>
+    <button onclick="submitTask()">Save Task</button>
     <button onclick="closeModal('taskModal')" style="background:#636e72">Cancel</button>
 </div></div>
 
@@ -206,47 +135,44 @@ th{background:var(--primary); color:#fff}
     <button onclick="closeModal('targetModal')" style="background:#636e72">Cancel</button>
 </div></div>
 
+<div class="modal" id="entryModal"><div class="modalContent">
+    <h3 id="entryTitle">Add Entry</h3>
+    <input id="entDesc" placeholder="Description">
+    <input id="entAmt" type="number" placeholder="Amount">
+    <select id="entCat"><option value="General">General</option><option value="Business">Business</option></select>
+    <input type="hidden" id="entType">
+    <button onclick="submitEntry()">Save</button>
+    <button onclick="closeModal('entryModal')" style="background:#636e72">Cancel</button>
+</div></div>
+
 <div class="modal" id="settingsModal"><div class="modalContent">
     <h3>Profile Settings</h3>
-    <label>User Name:</label>
     <input id="setBizName" placeholder="Your Name">
-    <label>Change Password:</label>
-    <div class="pass-container">
-        <input id="newPass" type="password" placeholder="New Password">
-        <button type="button" class="toggle-btn" onclick="togglePassword('newPass')">👁️</button>
-    </div>
+    <div class="pass-container"><input id="newPass" type="password" placeholder="New Password"><button class="toggle-btn" onclick="togglePassword('newPass')">👁️</button></div>
     <button onclick="saveSettings()">Apply Changes</button>
     <div class="backup-zone">
-        <h4>Data Management</h4>
-        <button onclick="exportData()" style="background: #607D8B;">💾 Backup to File</button>
-        <hr style="margin: 15px 0; border: 0.5px solid var(--border);">
-        <input type="file" id="importFile" accept=".json" style="font-size: 0.7em; padding: 5px;">
-        <button onclick="importData()" style="background: var(--warn);">📥 Restore Data</button>
+        <button onclick="exportData()" style="background: #607D8B;">💾 Backup</button>
+        <input type="file" id="importFile" accept=".json" style="margin-top:10px;">
+        <button onclick="importData()" style="background: var(--warn);">📥 Restore</button>
     </div>
-    <button onclick="closeModal('settingsModal')" style="background:#636e72; margin-top: 15px;">Close</button>
+    <button onclick="closeModal('settingsModal')" style="background:#636e72">Close</button>
 </div></div>
 
 <div class="modal" id="reportModal"><div class="modalContent" style="max-width: 95%;">
     <h3>Report Analysis</h3>
     <select id="reportYearSelect" onchange="updateReportChart()"></select>
     <div style="height: 250px; margin-top:15px;"><canvas id="reportChart"></canvas></div>
-    <button onclick="closeModal('reportModal')" style="background:#f44336; margin-top:15px;">Close</button>
+    <button onclick="closeModal('reportModal')" style="background:#f44336">Close</button>
 </div></div>
 
-<div class="modal" id="customAlertModal">
-    <div class="modalContent" style="text-align: center; max-width: 300px;">
-        <h3 id="alertTitle" style="margin-top: 0;">Notification</h3>
-        <p id="alertMessage"></p>
-        <button onclick="closeModal('customAlertModal')" style="background:var(--accent)">Okay</button>
-    </div>
-</div>
+<div class="modal" id="customAlertModal"><div class="modalContent" style="text-align: center;"><h3 id="alertTitle"></h3><p id="alertMessage"></p><button onclick="closeModal('customAlertModal')">Okay</button></div></div>
 
 <script>
-const db = new Dexie("LifeManagerDB");
-db.version(2).stores({
-    tasks: '++id, date, completed',
+const db = new Dexie("LifeManagerDB_Full");
+db.version(1).stores({
     entries: '++id, d, t',
-    targets: '++id, date, status',
+    targets: '++id, status',
+    tasks: '++id, dueDate',
     config: 'key'
 });
 
@@ -255,235 +181,222 @@ let security = {p:"1234"};
 let myChart = null;
 const currentYear = new Date().getFullYear();
 
-function togglePassword(id) {
-    const input = document.getElementById(id);
-    input.type = input.type === "password" ? "text" : "password";
-}
-
-async function exportData() {
-    const backupData = {
-        tasks: await db.tasks.toArray(),
-        entries: await db.entries.toArray(),
-        targets: await db.targets.toArray(),
-        config: await db.config.toArray(),
-        date: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lifemanager_backup.json`;
-    a.click();
-}
-
-async function importData() {
-    const fileInput = document.getElementById('importFile');
-    if (!fileInput.files[0]) return showAlert("Select a file first.");
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const data = JSON.parse(e.target.result);
-        await db.tasks.clear(); await db.entries.clear(); await db.targets.clear(); await db.config.clear();
-        if(data.tasks) await db.tasks.bulkAdd(data.tasks);
-        if(data.entries) await db.entries.bulkAdd(data.entries);
-        if(data.targets) await db.targets.bulkAdd(data.targets);
-        if(data.config) await db.config.bulkAdd(data.config);
-        location.reload();
-    };
-    reader.readAsText(fileInput.files[0]);
-}
-
-// Fixed Alert Function
-function showAlert(message, title = "Notification") {
-    document.getElementById('alertTitle').innerText = title;
-    document.getElementById('alertMessage').innerText = message;
-    openModal('customAlertModal');
-}
-
-function initReportYears() {
-    const sel = document.getElementById('reportYearSelect');
-    let options = "";
-    for(let i = 2024; i <= 2100; i++) {
-        options += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`;
+// Initial Load
+async function initApp() {
+    const s = await db.config.get('settings');
+    const sec = await db.config.get('security');
+    if(s) settings = s.val;
+    if(sec) security = sec.val;
+    
+    const yearSel = document.getElementById('filterYear');
+    if(yearSel) {
+        for(let i=2024; i<=2100; i++) yearSel.options.add(new Option(i, i, i===currentYear, i===currentYear));
     }
-    sel.innerHTML = options;
+    initReportYears();
+    applySettingsUI();
+    renderCashBook();
 }
+
+function togglePassword(id) { const el = document.getElementById(id); el.type = el.type === "password" ? "text" : "password"; }
 
 function doLogin() {
     if(document.getElementById("loginPass").value === security.p) {
         document.getElementById("login").style.display = "none";
         document.getElementById("app").style.display = "block";
-        refreshAllUI();
-    } else { 
-        showAlert("Access Denied", "Error"); 
-    }
+    } else { showAlert("Access Denied"); }
 }
 
-function getToday() { return new Date().toISOString().split("T")[0]; }
-
-async function refreshAllUI() {
-    renderTasks();
-    renderCashBook();
-    renderTargets();
+function switchView(viewId) {
+    const target = document.getElementById(viewId);
+    if(!target) return;
+    document.querySelectorAll('.view-screen').forEach(s => s.style.display = 'none');
+    target.style.display = 'block';
+    if(viewId === 'targetView') renderTargets();
+    if(viewId === 'taskView') renderTasks();
+    if(viewId === 'cashView') renderCashBook();
 }
 
-async function submitEntry() {
-    const descEl = document.getElementById("entDesc");
-    const amtEl = document.getElementById("entAmt");
-    const catEl = document.getElementById("entCat");
-    if (!descEl.value || !amtEl.value) return;
-    await db.entries.add({ 
-        d: getToday(), desc: descEl.value, t: document.getElementById("entType").value, 
-        a: parseFloat(amtEl.value), c: catEl.value 
-    });
-    descEl.value = ""; amtEl.value = ""; closeModal('entryModal'); renderCashBook();
-}
-
+// Tasks logic
 async function submitTask() {
-    const titleEl = document.getElementById("taskInTitle");
-    const notesEl = document.getElementById("taskInNotes");
-    if (!titleEl.value) return;
-    await db.tasks.add({ title: titleEl.value, completed: false, date: getToday(), notes: notesEl.value });
-    titleEl.value = ""; notesEl.value = ""; closeModal('taskModal'); renderTasks();
-}
-
-async function submitTarget() {
-    const titleEl = document.getElementById("targetInTitle");
-    if (!titleEl.value) return;
-    await db.targets.add({ title: titleEl.value, status: 'pending', date: getToday() });
-    titleEl.value = ""; closeModal('targetModal'); renderTargets();
+    const title = document.getElementById('taskInTitle').value;
+    if(!title) return;
+    await db.tasks.add({
+        title, category: document.getElementById('taskInCat').value,
+        notes: document.getElementById('taskInNotes').value,
+        dueDate: document.getElementById('taskInDue').value
+    });
+    closeModal('taskModal'); renderTasks();
 }
 
 async function renderTasks() {
-    const list = document.getElementById("taskList");
-    const all = await db.tasks.toArray();
-    list.innerHTML = all.map(t => `<li style="background:var(--li); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">${t.title}</span>
-        <div style="display: flex; gap: 5px;">
-            <button onclick="toggleTask(${t.id})" style="width:auto; background:var(--accent); padding:5px 10px; margin:0;">${t.completed ? '↩️' : '✅'}</button> 
-            <button onclick="delTask(${t.id})" style="width:auto; background:#f44336; padding:5px 10px; margin:0;">🗑️</button>
-        </div>
-    </li>`).join('');
+    const list = document.getElementById('taskList');
+    if(!list) return;
+    
+    const tasks = await db.tasks.toArray();
+    const now = new Date(); // Get current time for comparison
+
+    list.innerHTML = tasks.map(t => {
+        let dueStr = "";
+        if(t.dueDate) {
+            const d = new Date(t.dueDate);
+            // Check if current time is greater than the due time
+            const isOverdue = now > d; 
+            const statusColor = isOverdue ? "#f44336" : "#2196F3"; // Red if overdue, Blue if safe
+            const statusText = isOverdue ? "OVERDUE" : "Upcoming";
+
+            dueStr = `
+                <div style="color:${statusColor}; font-size:0.8rem; font-weight:bold; margin-top:5px;">
+                    ⏰ ${statusText}: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true})}
+                </div>`;
+        }
+        
+        return `
+            <li style="background:var(--li); padding:12px; margin:8px 0; border-radius:8px; border-left: 5px solid var(--warn);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="flex:1;">
+                        <b style="display:block; margin-bottom:2px;">${t.title}</b>
+                        <small style="color:#666;">${t.category || 'General'}</small>
+                        ${dueStr}
+                        <p style="margin:5px 0 0 0; font-size:0.85rem; color:var(--text); opacity:0.8;">${t.notes || ''}</p>
+                    </div>
+                    <button onclick="delTask(${t.id})" style="background:none; color:red; width:auto; padding:0; font-size:1.2rem;">Delete</button>
+                </div>
+            </li>`;
+    }).reverse().join('');
 }
 
-async function initApp() {
-    try {
-        const s = await db.config.get('settings');
-        const sec = await db.config.get('security');
-        if(s) settings = s.val;
-        if(sec) security = sec.val;
-        const yearSel = document.getElementById('filterYear');
-        if (yearSel) {
-            let yearOpts = "";
-            for(let i = 2024; i <= 2100; i++) { yearOpts += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`; }
-            yearSel.innerHTML = yearOpts;
-        }
-        applySettingsUI();
-        initReportYears();
-        renderCashBook(); 
-    } catch(e) { console.error("DB Init failed", e); }
+// Targets logic
+async function submitTarget() {
+    const title = document.getElementById('targetInTitle').value;
+    if(!title) return;
+    await db.targets.add({ title, status: 'pending' });
+    closeModal('targetModal'); renderTargets();
+}
+
+async function renderTargets() {
+    const list = document.getElementById('targetList');
+    if(!list) return;
+    const all = await db.targets.toArray();
+    list.innerHTML = all.map(t => `<li style="background:var(--card); border: 1px solid var(--border); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>${t.title}</span>
+        <div style="display:flex; gap:8px;">
+            <button class="status-btn ${t.status}" onclick="cycleTargetStatus(${t.id}, '${t.status}')">${t.status.toUpperCase()}</button>
+            <button onclick="delTarget(${t.id})" style="background:none; color:red; width:auto; padding:0;">🗑️</button>
+        </div></li>`).reverse().join('');
+}
+
+async function cycleTargetStatus(id, curr) {
+    const next = curr === 'pending' ? 'completed' : (curr === 'completed' ? 'failed' : 'pending');
+    await db.targets.update(id, { status: next });
+    renderTargets();
+}
+
+// Finance logic
+async function submitEntry() {
+    const desc = document.getElementById("entDesc").value;
+    const amt = parseFloat(document.getElementById("entAmt").value);
+    if(!desc || isNaN(amt)) return;
+    await db.entries.add({ d: new Date().toISOString().split('T')[0], desc, t: document.getElementById("entType").value, a: amt, c: document.getElementById("entCat").value });
+    closeModal('entryModal'); renderCashBook();
 }
 
 async function renderCashBook() {
     const body = document.getElementById("cashRows");
-    const filterYear = document.getElementById("filterYear");
-    const filterMonth = document.getElementById("filterMonth");
-    if (!filterYear || !filterMonth) return;
-    const selYear = parseInt(filterYear.value);
-    const selMonth = filterMonth.value; 
-    let inc = 0, exp = 0;
+    const y = parseInt(document.getElementById("filterYear")?.value || currentYear);
+    const m = document.getElementById("filterMonth")?.value;
+    if(!body) return;
     const all = await db.entries.toArray();
+    let inc=0, exp=0;
     body.innerHTML = all.filter(en => {
-        const entryDate = new Date(en.d);
-        const matchYear = entryDate.getFullYear() === selYear;
-        const matchMonth = (selMonth === "all") || (entryDate.getMonth() === parseInt(selMonth));
-        return matchYear && matchMonth;
+        const d = new Date(en.d);
+        return d.getFullYear() === y && (m === 'all' || d.getMonth() === parseInt(m));
     }).map(en => {
-        const val = Number(en.a) || 0;
-        en.t === "income" ? inc += val : exp += val;
-        return `<tr>
-            <td><small>${en.d}</small></td>
-            <td>${en.desc} <br><span style="font-size:0.7em; background:var(--li); padding:2px 5px; border-radius:4px;">${en.c || 'General'}</span></td>
-            <td style="color:${en.t==='income'?'green':'red'}">${val.toLocaleString()}</td>
-            <td><button onclick="delEntry(${en.id})" style="background:red;width:auto;padding:5px 10px; margin:0;">X</button></td>
-        </tr>`;
+        en.t === 'income' ? inc += en.a : exp += en.a;
+        return `<tr><td>${en.d}</td><td>${en.desc}</td><td style="color:${en.t==='income'?'green':'red'}">${en.a.toLocaleString()}</td><td><button onclick="delEntry(${en.id})" style="background:red; padding:2px 8px; width:auto;">x</button></td></tr>`;
     }).reverse().join('');
     document.getElementById("totalInc").innerText = inc.toLocaleString();
     document.getElementById("totalExp").innerText = exp.toLocaleString();
     document.getElementById("totalBal").innerText = (inc - exp).toLocaleString();
 }
 
-async function renderTargets() {
-    const list = document.getElementById("targetList");
-    const all = await db.targets.toArray();
-    list.innerHTML = all.map(t => {
-        const statusClass = t.status || 'pending';
-        return `<li style="background:var(--card); border: 1px solid var(--border); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span>${t.title}</span>
-            <div style="display: flex; gap: 8px;">
-                <button class="status-btn ${statusClass}" onclick="cycleTargetStatus(${t.id}, '${statusClass}')">${statusClass.toUpperCase()}</button>
-                <button onclick="delTarget(${t.id})" style="width:auto; background:none; color:#f44336; padding:5px; border:none; font-size:1.2em;">🗑️</button>
-            </div>
-        </li>`;
-    }).reverse().join('');
+// Chart & Backup
+function initReportYears() {
+    const s = document.getElementById('reportYearSelect');
+    if(s) for(let i=2024; i<=2100; i++) s.options.add(new Option(i, i, i===currentYear, i===currentYear));
 }
 
-async function cycleTargetStatus(id, currentStatus) {
-    let nextStatus = currentStatus === 'pending' ? 'completed' : (currentStatus === 'completed' ? 'failed' : 'pending');
-    await db.targets.update(id, { status: nextStatus });
-    renderTargets();
+async function updateReportChart() {
+    const yr = parseInt(document.getElementById('reportYearSelect').value);
+    const all = await db.entries.toArray();
+    let incD = new Array(12).fill(0), expD = new Array(12).fill(0);
+    all.forEach(e => {
+        const d = new Date(e.d);
+        if(d.getFullYear() === yr) e.t === 'income' ? incD[d.getMonth()] += e.a : expD[d.getMonth()] += e.a;
+    });
+    if(myChart) myChart.destroy();
+    myChart = new Chart(document.getElementById("reportChart"), { type:'bar', data: { labels: ["J","F","M","A","M","J","J","A","S","O","N","D"], datasets: [{label:'In', data:incD, backgroundColor:'#4CAF50'},{label:'Out', data:expD, backgroundColor:'#f44336'}] }, options: {responsive:true, maintainAspectRatio:false}});
 }
 
-async function delTarget(id) { if(confirm("Delete?")) { await db.targets.delete(id); renderTargets(); } }
-
-function openModal(id) {
-  const modal = document.getElementById(id);
-  if (modal) modal.style.display = "flex";
-  else console.error("Modal not found:", id);
+async function exportData() {
+    const data = { tasks: await db.tasks.toArray(), entries: await db.entries.toArray(), targets: await db.targets.toArray(), config: await db.config.toArray() };
+    const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click();
 }
 
-function closeModal(id) { document.getElementById(id).style.display = "none"; }
+async function importData() {
+    const file = document.getElementById('importFile').files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const d = JSON.parse(e.target.result);
+        await db.tasks.clear(); await db.entries.clear(); await db.targets.clear();
+        if(d.tasks) await db.tasks.bulkAdd(d.tasks);
+        if(d.entries) await db.entries.bulkAdd(d.entries);
+        if(d.targets) await db.targets.bulkAdd(d.targets);
+        location.reload();
+    };
+    reader.readAsText(file);
+}
 
-async function toggleTask(id) { const t = await db.tasks.get(id); await db.tasks.update(id, {completed: !t.completed}); renderTasks(); }
-async function delTask(id) { await db.tasks.delete(id); renderTasks(); }
-async function delEntry(id) { await db.entries.delete(id); renderCashBook(); }
-
+// Utility
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function showAlert(m) { document.getElementById('alertTitle').innerText = "Notice"; document.getElementById('alertMessage').innerText = m; openModal('customAlertModal'); }
+function updateDuePreview() { 
+    const val = document.getElementById('taskInDue').value;
+    if(!val) return;
+    const d = new Date(val);
+    document.getElementById('duePreview').innerText = "Selected: " + d.toLocaleString([], {hour12:true});
+}
+function openEntryModal(t) { document.getElementById('entType').value = t; document.getElementById('entryTitle').innerText = t.toUpperCase(); openModal('entryModal'); }
+function openTaskModal() { openModal('taskModal'); }
+function openTargetModal() { openModal('targetModal'); }
+function showYearlyReport() { openModal('reportModal'); updateReportChart(); }
+function toggleTheme() { const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"; document.documentElement.setAttribute("data-theme", t); }
+function applySettingsUI() { document.getElementById('dispName').innerText = settings.name; document.getElementById('setBizName').value = settings.name; }
 async function saveSettings() {
     settings.name = document.getElementById('setBizName').value;
     const np = document.getElementById('newPass').value;
-    if(np.trim()) { security.p = np; await db.config.put({key: 'security', val: security}); }
-    await db.config.put({key: 'settings', val: settings});
-    applySettingsUI(); closeModal('settingsModal');
-    showAlert("Settings Saved!");
+    if(np) { security.p = np; await db.config.put({key:'security', val:security}); }
+    await db.config.put({key:'settings', val:settings});
+    applySettingsUI(); closeModal('settingsModal'); showAlert("Saved");
 }
-
-function applySettingsUI() { document.getElementById('dispName').innerText = settings.name; document.getElementById('setBizName').value = settings.name; }
-function switchView(id) { ['mainDashboard', 'taskView', 'targetView', 'cashView'].forEach(v => document.getElementById(v).style.display = (v === id) ? 'block' : 'none'); }
-function openEntryModal(t) { document.getElementById('entType').value = t; openModal('entryModal'); }
-function openTaskModal() { openModal('taskModal'); }
-function openTargetModal() { openModal('targetModal'); }
-function toggleTheme() { const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"; document.documentElement.setAttribute("data-theme", t); }
-function showYearlyReport() { openModal('reportModal'); updateReportChart(); }
+async function delTask(id) { await db.tasks.delete(id); renderTasks(); }
+async function delTarget(id) { await db.targets.delete(id); renderTargets(); }
+async function delEntry(id) { await db.entries.delete(id); renderCashBook(); }
 function doLogout() { location.reload(); }
 
-async function updateReportChart() {
-    const year = parseInt(document.getElementById('reportYearSelect').value);
-    const ctx = document.getElementById("reportChart");
-    let incD = new Array(12).fill(0), expD = new Array(12).fill(0);
-    const all = await db.entries.toArray();
-    all.forEach(en => {
-        let dt = new Date(en.d);
-        if(dt.getFullYear() === year) {
-            let m = dt.getMonth();
-            en.t === "income" ? incD[m] += Number(en.a) : expD[m] += Number(en.a);
-        }
-    });
-    if(myChart) myChart.destroy();
-    myChart = new Chart(ctx, { type: 'bar', data: { labels: ["J","F","M","A","M","J","J","A","S","O","N","D"], datasets: [{ label: 'In', data: incD, backgroundColor: '#4CAF50' }, { label: 'Out', data: expD, backgroundColor: '#f44336' }] }, options: { responsive: true, maintainAspectRatio: false } });
-}
-
 initApp();
+
+// Refresh the task list every 60 seconds to update colors automatically
+setInterval(() => {
+    if (document.getElementById('taskView').style.display === 'block') {
+        renderTasks();
+    }
+}, 60000);
+
 </script>
-    <script>
+<script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
@@ -491,6 +404,6 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('Registration failed: ', err));
   });
 }
-    </script>
-</body>
+</script>
+</body>    
 </html>
