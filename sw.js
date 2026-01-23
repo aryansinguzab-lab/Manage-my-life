@@ -1,24 +1,26 @@
-const cacheName = 'lifemgr-v3'; // Incremented for fresh start
+const cacheName = 'lifemgr-v5'; // Increased version
 const assets = [
   './',
   './index.html',
   './manifest.json',
+  './manifest.js',
   './dexie.js',
   './chart.js',
-  './icon.png',
-  './manifest.js' // Make sure your trial logic script is here!
+  './icon.png'
 ];
 
+// Install: Cache everything immediately
 self.addEventListener('install', evt => {
   self.skipWaiting();
   evt.waitUntil(
     caches.open(cacheName).then(cache => {
-      // Use cache.addAll to ensure core UI is saved
+      console.log('Caching shell assets');
       return cache.addAll(assets);
     })
   );
 });
 
+// Activate: Delete old versions of the app
 self.addEventListener('activate', evt => {
   evt.waitUntil(
     caches.keys().then(keys => {
@@ -28,20 +30,17 @@ self.addEventListener('activate', evt => {
       );
     })
   );
-  return self.clients.claim(); // Immediately control the page
+  return self.clients.claim();
 });
 
-// Optimized Fetch Strategy
+// Fetch: Serve from Cache first for speed
 self.addEventListener('fetch', evt => {
   evt.respondWith(
     caches.match(evt.request).then(cacheRes => {
-      // If file is in cache, return it IMMEDIATELY (Instant load)
-      if (cacheRes) return cacheRes;
-
-      // Otherwise, go to network and cache the result for next time
-      return fetch(evt.request).then(fetchRes => {
+      // Return cached file if found, else fetch from network
+      return cacheRes || fetch(evt.request).then(fetchRes => {
         return caches.open(cacheName).then(cache => {
-          // Only cache successful GET requests
+          // Dynamically cache new requests (like images/fonts)
           if (evt.request.method === 'GET') {
             cache.put(evt.request.url, fetchRes.clone());
           }
@@ -49,8 +48,8 @@ self.addEventListener('fetch', evt => {
         });
       });
     }).catch(() => {
-      // Offline fallback
-      if (evt.request.mode === 'navigate') {
+      // Fallback if network and cache fail (Offline)
+      if (evt.request.url.indexOf('.html') > -1) {
         return caches.match('./index.html');
       }
     })
