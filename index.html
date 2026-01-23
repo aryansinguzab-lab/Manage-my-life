@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Manager</title>
-    
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
     
     <script src="dexie.js"></script>
     <script src="chart.js"></script>
-    <script src="manifest.js"></script>
-</head>
-
-
-    <style>
+  <style>
         
         :root { --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800; }
         [data-theme="dark"] { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; --li: #2d2d2d; --primary: #66bb6a; --accent: #64b5f6; }
@@ -1476,31 +1471,15 @@ async function openIndependentDebtList() {
     }
 }
 
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    // Register immediately without waiting for 'load'
-    navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(reg => {
-        console.log('SW Registered for scope:', reg.scope);
-        
-        // Check for updates to the Service Worker
-        reg.onupdatefound = () => {
-          const installingWorker = reg.installing;
-          installingWorker.onstatechange = () => {
-            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // This forces the "Old version" to update to the "New version"
-              console.log('New content available; please refresh.');
-              if(confirm("New version available! Update now?")) {
-                  location.reload();
-              }
-            }
-          };
-        };
-      })
-      .catch(err => console.error('SW Registration failed:', err));
-  }
-              </script>
+   <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered!'))
+      .catch(err => console.log('Registration failed: ', err));
+  });
+}
+    </script>
     
     
 <div id="trialBadge">Trial: <span id="daysLeft">--</span> days left</div>
