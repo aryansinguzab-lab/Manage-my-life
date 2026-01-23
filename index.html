@@ -1501,15 +1501,7 @@ async function openIndependentDebtList() {
 }
 
 </script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker registered!'))
-      .catch(err => console.log('Registration failed: ', err));
-  });
-}
-    </script>
+
 <div id="trialBadge">Trial: <span id="daysLeft">--</span> days left</div>
 
 <div id="expiryLock">
@@ -1526,6 +1518,15 @@ if ('serviceWorker' in navigator) {
         <button onclick="checkUnlockCode()" style="background:#4CAF50;">Activate Forever</button>
     </div>
 </div>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered!'))
+      .catch(err => console.log('Registration failed: ', err));
+  });
+}
+    </script>
 
 </body>    
 </html>
