@@ -1,11 +1,11 @@
 {
   "name": "Life Manager",
   "short_name": "LifeMgr",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
+  "id": "life-manager-pwa",
   "icons": [
     {
       "src": "icon.png",
