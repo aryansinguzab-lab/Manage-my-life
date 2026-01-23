@@ -1,4 +1,4 @@
-const cacheName = 'lifemgr-v2'; // Incremented version
+const cacheName = 'lifemgr-v3'; // Incremented for fresh start
 const assets = [
   './',
   './index.html',
@@ -6,20 +6,19 @@ const assets = [
   './dexie.js',
   './chart.js',
   './icon.png',
-  // Add CSS or other critical UI files here
+  './manifest.js' // Make sure your trial logic script is here!
 ];
 
-// Install: Cache core assets
 self.addEventListener('install', evt => {
-  self.skipWaiting(); // Force the new service worker to become active
+  self.skipWaiting();
   evt.waitUntil(
     caches.open(cacheName).then(cache => {
+      // Use cache.addAll to ensure core UI is saved
       return cache.addAll(assets);
     })
   );
 });
 
-// Activate: Clean up old caches
 self.addEventListener('activate', evt => {
   evt.waitUntil(
     caches.keys().then(keys => {
@@ -29,22 +28,29 @@ self.addEventListener('activate', evt => {
       );
     })
   );
+  return self.clients.claim(); // Immediately control the page
 });
 
-// Fetch: Network falling back to Cache (with dynamic caching)
+// Optimized Fetch Strategy
 self.addEventListener('fetch', evt => {
   evt.respondWith(
     caches.match(evt.request).then(cacheRes => {
-      return cacheRes || fetch(evt.request).then(fetchRes => {
-        // Dynamically cache new resources (like external fonts or API images)
+      // If file is in cache, return it IMMEDIATELY (Instant load)
+      if (cacheRes) return cacheRes;
+
+      // Otherwise, go to network and cache the result for next time
+      return fetch(evt.request).then(fetchRes => {
         return caches.open(cacheName).then(cache => {
-          cache.put(evt.request.url, fetchRes.clone());
+          // Only cache successful GET requests
+          if (evt.request.method === 'GET') {
+            cache.put(evt.request.url, fetchRes.clone());
+          }
           return fetchRes;
         });
       });
     }).catch(() => {
-      // Fallback if both fail (useful for returning index.html on 404/offline)
-      if (evt.request.url.indexOf('.html') > -1) {
+      // Offline fallback
+      if (evt.request.mode === 'navigate') {
         return caches.match('./index.html');
       }
     })
