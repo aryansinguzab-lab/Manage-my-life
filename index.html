@@ -8,9 +8,8 @@
     <script src="dexie.js"></script>
     <script src="chart.js"></script>
     <script src="manifest.js"></script>
-    <script src="icon.png"></script>
- 
     
+
     <style>
         
         :root { --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800; }
@@ -37,6 +36,7 @@
         .summary-box { display: flex; justify-content: space-around; background: var(--li); padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border: 1px solid var(--border); }
         #login{position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999}
         .modal{position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000}
+            
         .modalContent{background:var(--card); padding:20px; border-radius:15px; width:95%; max-width:450px; box-sizing: border-box; overflow-y: auto; max-height: 90vh;}
         .pass-container { position: relative; width: 100%; }
         .toggle-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--accent); width: auto; padding: 5px; cursor: pointer; }
@@ -310,9 +310,10 @@
     <button onclick="closeModal('reportModal')" style="background:#f44336">Close</button>
 </div></div>
 
-<div class="modal" id="customAlertModal"><div class="modalContent" style="text-align: center;"><h3 id="alertTitle"></h3><p id="alertMessage"></p><button onclick="closeModal('customAlertModal')">Okay</button></div></div>
-<div class="modal" id="debtModal" style="z-index: 1000 !important;">
-    <div class="modalContent" style="background: #ffffff; color: #2d3436; border: 1px solid #dfe6e9; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
+<div class="modal" id="customAlertModal"><div class="modalContent" style="text-align: center;z-index: 9999;"><h3 id="alertTitle"></h3><p id="alertMessage"></p><button onclick="closeModal('customAlertModal')">Okay</button></div></div>
+
+<div class="modal" id="debtModal" style="z-index: 1000 !important; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 450px; display: none;">
+    <div class="modalContent" style="background: #ffffff; color: #2d3436; border: 1px solid #dfe6e9; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
         <h3 style="color: #2196F3; margin-top: 0; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px;">👥 Debtors & Creditors</h3>
         
         <div style="display:flex; gap:10px; margin-bottom:20px;">
@@ -331,7 +332,7 @@
             
             <div style="margin-bottom:15px;">
                 <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Name</label>
-                <input id="dName" placeholder="e.g. John Doe" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; box-sizing: border-box; color:black;">
+                <input id="dName" placeholder="Name" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; box-sizing: border-box; color:black;">
             </div>
             
             <div style="margin-bottom:20px;">
@@ -342,26 +343,26 @@
             <button onclick="saveNewDebt()" style="width:100%; background:#2196F3; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Create Record </button>
         </div>
 
-        <div id="settleDebtSection">
-    <label>Select Person</label>
-    <select id="dSelect" onchange="refreshDebtBalance()" style="width:100%; margin-bottom:10px;"></select>
-    
-    <div id="dBalanceDisplay" style="padding:10px; background:#f0f0f0; margin-bottom:10px;"></div>
+        <div id="settleDebtSection" style="display:none;">
+            <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Select Person</label>
+            <select id="dSelect" onchange="refreshDebtBalance()" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #dfe6e9;"></select>
+            
+            <div id="dBalanceDisplay" style="padding:10px; background:#f8f9fa; border-radius:6px; margin-bottom:10px; font-weight:bold; color:#2d3436;"></div>
 
-    <label>Amount to Pay</label>
-    <input type="number" id="dPayAmt" placeholder="0.00" style="width:100%; margin-bottom:10px;">
+            <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Amount to Pay</label>
+            <input type="number" id="dPayAmt" placeholder="0.00" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #dfe6e9;">
 
-    <label>Payment Method</label>
-    <select id="dAccount" style="width:100%; margin-bottom:15px;">
-        <option value="Cash">Cash</option>
-        <option value="Mobile Money">Mobile Money</option>
-        <option value="Bank">Bank</option>
-    </select>
+            <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Payment Method</label>
+            <select id="dAccount" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #dfe6e9;">
+                <option value="Cash">Cash</option>
+                <option value="Mobile Money">Mobile Money</option>
+                <option value="Bank">Bank</option>
+            </select>
 
-    <button onclick="settleDebt()" style="width:100%; background:green; color:white; padding:10px;">Post Payment</button>
-</div>
+            <button onclick="settleDebt()" style="width:100%; background:#2e7d32; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Post Payment</button>
+        </div>
 
-        <button onclick="closeModal('debtModal')" style="background:grey; color:white; margin-top:20px; border:1px solid #dfe6e9; width:100%; padding:10px; border-radius:8px; cursor:pointer;">Cancel & Close</button>
+        <button onclick="closeModal('debtModal')" style="background:#b2bec3; color:white; margin-top:20px; border:none; width:100%; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Cancel & Close</button>
     </div>
 </div>
 
@@ -709,13 +710,22 @@ async function importData() {
 // Utility
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function showAlert(m) { document.getElementById('alertTitle').innerText = "Notice"; document.getElementById('alertMessage').innerText = m; openModal('customAlertModal'); }
-function updateDuePreview() { 
-    const val = document.getElementById('taskInDue').value;
-    if(!val) return;
-    const d = new Date(val);
-    document.getElementById('duePreview').innerText = "Selected: " + d.toLocaleString([], {hour12:true});
+function showAlert(m) { 
+    // Set the text
+    document.getElementById('alertTitle').innerText = "Notice"; 
+    document.getElementById('alertMessage').innerText = m; 
+    
+    // 1. Get the alert element
+    const alertModal = document.getElementById('customAlertModal');
+    
+    // 2. Force it to be visible and at the very top
+    alertModal.style.display = 'flex'; 
+    alertModal.style.zIndex = "9999"; 
+    
+    // 3. Optional: If you use a general openModal function, call it here
+    openModal('customAlertModal'); 
 }
+
 let budgetChart = null;
 
 async function submitEntry() {
@@ -1005,7 +1015,7 @@ async function submitContra() {
     const date = new Date().toISOString().split('T')[0];
 
     if (!amt || amt <= 0) {
-        alert("Please enter a valid amount");
+        showAlert("Please enter a valid amount");
         return;
     }
     if (from === to) {
@@ -1041,7 +1051,7 @@ async function submitContra() {
         if (typeof renderCashBook === "function") renderCashBook();
         if (typeof updateAccountUI === "function") updateAccountUI();
         
-        alert("Transfer Successful!");
+        showAlert("Transfer Successful!");
     } catch (err) {
         console.error("Transfer failed:", err);
     }
@@ -1116,8 +1126,8 @@ async function loadDebtDropdown() {
     if (!dropdown) return;
 
     try {
-        // This line is the "filter" - it ignores anyone with 0 balance
-        const active = await db.debts.where('balance').above(0).toArray();
+        // Fetch only those with a balance remaining
+        let active = await db.debts.where('balance').above(0).toArray();
         
         if (active.length === 0) {
             dropdown.innerHTML = '<option value="">-- No Active Debts --</option>';
@@ -1125,14 +1135,20 @@ async function loadDebtDropdown() {
             return;
         }
 
+        // --- ADDED SORTING LOGIC HERE ---
+        // Sort alphabetically by name (case-insensitive)
+        active.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Populate the dropdown
         dropdown.innerHTML = '<option value="">-- Choose Person --</option>' + 
             active.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
             
     } catch (error) {
         console.error("List Load Error:", error);
-        alert("Database Error: " + error.message);
+        showAlert("Database Error: " + error.message);
     }
 }
+
 
 async function refreshDebtBalance() {
     const id = document.getElementById('dSelect').value;
@@ -1330,3 +1346,4 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>    
 </html>
+    
