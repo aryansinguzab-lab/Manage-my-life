@@ -9,7 +9,8 @@
     <script src="dexie.js"></script>
     <script src="chart.js"></script>
 </head>
-  <style>
+
+    <style>
         
         :root { --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800; }
         [data-theme="dark"] { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; --li: #2d2d2d; --primary: #66bb6a; --accent: #64b5f6; }
@@ -102,6 +103,7 @@
 
 
     </style>
+</head>
 <body>
 
 <div id="login">
@@ -457,21 +459,48 @@ let security = {p:""};
 let myChart = null;
 const currentYear = new Date().getFullYear();
 
-// Initial Load
 async function initApp() {
-    const s = await db.config.get('settings');
-    const sec = await db.config.get('security');
-    if(s) settings = s.val;
-    if(sec) security = sec.val;
-    
-    const yearSel = document.getElementById('filterYear');
-    if(yearSel) {
-        for(let i=2024; i<=2100; i++) yearSel.options.add(new Option(i, i, i===currentYear, i===currentYear));
+    try {
+        // 1. Ensure DB is connected before doing anything
+        await db.open();
+
+        // 2. Fetch configurations
+        const [s, sec] = await Promise.all([
+            db.config.get('settings'),
+            db.config.get('security')
+        ]);
+
+        if(s) settings = s.val;
+        if(sec) security = sec.val;
+        
+        // 3. Setup Year Dropdown
+        const yearSel = document.getElementById('filterYear');
+        if(yearSel && yearSel.options.length <= 1) { // Prevent duplicate options on refresh
+            yearSel.innerHTML = ''; // Clear existing
+            for(let i=2024; i<=2100; i++) {
+                yearSel.options.add(new Option(i, i, i===currentYear, i===currentYear));
+            }
+        }
+
+        // 4. Run Trial System Check
+        await handleTrialSystem();
+
+        // 5. Render UI
+        initReportYears();
+        applySettingsUI();
+        await renderCashBook(); // Wait for data to render
+        await updateAccountUI(); // Show balances immediately
+
+    } catch (err) {
+        console.error("Critical Init Error:", err);
+        // If it fails, try to reload once
+        if (!window.location.hash) {
+            window.location.hash = 'reloaded';
+            location.reload();
+        }
     }
-    initReportYears();
-    applySettingsUI();
-    renderCashBook();
 }
+
 
 
 
@@ -1471,7 +1500,8 @@ async function openIndependentDebtList() {
     }
 }
 
-   <script>
+</script>
+<script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
@@ -1480,8 +1510,6 @@ if ('serviceWorker' in navigator) {
   });
 }
     </script>
-    
-    
 <div id="trialBadge">Trial: <span id="daysLeft">--</span> days left</div>
 
 <div id="expiryLock">
