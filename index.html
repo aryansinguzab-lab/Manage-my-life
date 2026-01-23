@@ -58,6 +58,48 @@
     50% { border-left-color: #f44336; }
     100% { border-left-color: #ffeeba; }
 }
+/* Trial Badge Style */
+#trialBadge {
+    background: var(--warn);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75em;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 100;
+}
+
+/* System Lock Screen Overlay */
+#expiryLock {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(18, 18, 18, 0.98);
+    z-index: 10000; /* Highest priority */
+    display: none; /* Controlled by JS */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.lock-card {
+    background: #2d2d2d;
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid #444;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    max-width: 350px;
+    width: 90%;
+}
 
 
     </style>
@@ -392,17 +434,28 @@
 </div>
 
 <script>
-const db = new Dexie("LifeManagerDB_Full2");
+// 1. Updated Database (Merged everything into one declaration)
+// 1. DATABASE (Only one 'const db' allowed!)
+const db = new Dexie("LifeManagerDB_Full4");
 db.version(1).stores({
     entries: '++id, d, t',
     targets: '++id, status',
     tasks: '++id, dueDate',
     debts: '++id, name, type, balance',
-    config: 'key'
+    config: 'key',
+    settings: 'key, value' // Used for trial/activation
 });
 
+// 2. CONFIGURATION (Only one set of these allowed!)
+const TRIAL_DAYS = 14;
+const ACTIVATION_CODE = "LOSCA-2p0r2o6";
+
+
+
+
+
 let settings = {name:"My Life Manager"};
-let security = {p:"1234"};
+let security = {p:""};
 let myChart = null;
 const currentYear = new Date().getFullYear();
 
@@ -422,6 +475,92 @@ async function initApp() {
     renderCashBook();
 }
 
+
+
+// --- 1. ALPHABETICAL DEBT DROPDOWN ---
+async function loadDebtDropdown() {
+    const dropdown = document.getElementById('dSelect');
+    if (!dropdown) return;
+
+    try {
+        let active = await db.debts.where('balance').above(0).toArray();
+        
+        if (active.length === 0) {
+            dropdown.innerHTML = '<option value="">-- No Active Accounts --</option>';
+            return;
+        }
+
+        // Alphabetical Sort
+        active.sort((a, b) => a.name.localeCompare(b.name));
+
+        dropdown.innerHTML = '<option value="">-- Choose Person --</option>' + 
+            active.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
+            
+    } catch (error) {
+        showAlert("Database Error: " + error.message);
+    }
+}
+async function handleTrialSystem() {
+    // Wait for Dexie to be ready
+    await db.open();
+
+    const activationRecord = await db.settings.get('is_activated');
+    const badge = document.getElementById('trialBadge');
+    
+    if (activationRecord && activationRecord.value === true) {
+        if(badge) badge.style.display = 'none';
+        return;
+    }
+
+    let installRecord = await db.settings.get('install_date');
+    
+    if (!installRecord) {
+        // Record the start date right now
+        const now = Date.now();
+        await db.settings.put({ key: 'install_date', value: now });
+        installRecord = { value: now }; // Use this for the current calculation
+    }
+
+    const installDate = installRecord.value;
+    const expiryTime = installDate + (TRIAL_DAYS * 24 * 60 * 60 * 1000);
+    const currentTime = Date.now();
+
+    if (currentTime > expiryTime) {
+        document.getElementById('expiryLock').style.display = 'flex';
+        document.getElementById('userRequestID').innerText = "LM-" + installDate.toString().slice(-4);
+    } else {
+        const diffInMs = expiryTime - currentTime;
+        const daysRemaining = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+        
+        if(badge) {
+            badge.style.display = 'block';
+            // Use innerText to ensure the number appears
+            document.getElementById('daysLeft').innerText = daysRemaining;
+        }
+    }
+}
+
+// --- 3. ACTIVATION LOGIC ---
+async function checkUnlockCode() {
+    const input = document.getElementById('unlockCodeInput').value;
+    
+    if (input === ACTIVATION_CODE) {
+        await db.settings.put({ key: 'is_activated', value: true });
+        
+        // MODAL DISAPPEARS INSTANTLY
+        document.getElementById('expiryLock').style.display = 'none';
+        if(document.getElementById('trialBadge')) document.getElementById('trialBadge').style.display = 'none';
+        
+        showAlert("Full Version Activated Forever!");
+    } else {
+        showAlert("Invalid Activation Code.");
+    }
+}
+
+// Initialize on Load
+window.onload = () => {
+    handleTrialSystem();
+};
 function togglePassword(id) { const el = document.getElementById(id); el.type = el.type === "password" ? "text" : "password"; }
 
 function doLogin() {
@@ -1344,6 +1483,22 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<div id="trialBadge">Trial: <span id="daysLeft">--</span> days left</div>
+
+<div id="expiryLock">
+    <div class="lock-card">
+        <h2 style="color:#ff4757;">Trial Expired ⏳</h2>
+        <p style="font-size:0.9em; color:#ccc;">Your 2-week access has ended. Send your ID to the developer for a code.</p>
+        
+        <div style="background:#000; padding:10px; border-radius:8px; margin:15px 0; border:1px dashed #555;">
+            <small style="color:#888;">Your Request ID:</small><br>
+            <strong id="userRequestID" style="color:#2196F3; font-family:monospace;"></strong>
+        </div>
+
+        <input type="password" id="unlockCodeInput" placeholder="Enter Activation Code">
+        <button onclick="checkUnlockCode()" style="background:#4CAF50;">Activate Forever</button>
+    </div>
+</div>
+
 </body>    
 </html>
-    
