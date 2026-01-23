@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Manager</title>
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="dexie.js"></script>
+    <script src="chart.js"></script>
     <style>
+        
         :root { --bg: #f5f5f5; --card: #fff; --text: #333; --border: #ccc; --li: #eee; --primary: #4CAF50; --accent: #2196F3; --warn: #FF9800; }
         [data-theme="dark"] { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; --li: #2d2d2d; --primary: #66bb6a; --accent: #64b5f6; }
         body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(--text); padding:10px; margin:0; transition: 0.3s;}
@@ -35,6 +36,25 @@
         .pass-container { position: relative; width: 100%; }
         .toggle-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--accent); width: auto; padding: 5px; cursor: pointer; }
         .backup-zone { background: var(--li); padding: 10px; border-radius: 8px; border: 1px dashed var(--border); margin-top: 15px; }
+        .budget-warning {
+    background: #fff3cd;
+    color: #856404;
+    padding: 15px;
+    border-left: 5px solid #ffeeba;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 0.9em;
+    line-height: 1.4;
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0% { border-left-color: #ffeeba; }
+    50% { border-left-color: #f44336; }
+    100% { border-left-color: #ffeeba; }
+}
+
+
     </style>
 </head>
 <body>
@@ -46,7 +66,7 @@
             <input id="loginPass" type="password" placeholder="Enter Password" autofocus>
             <button type="button" class="toggle-btn" onclick="togglePassword('loginPass')">👁️</button>
         </div>
-        <button onclick="doLogin()">Enter App</button>
+        <button onclick="doLogin()"style="background:#2196F3">Enter App</button>
     </section>
 </div>
 
@@ -54,66 +74,104 @@
     <div id="mainDashboard" class="view-screen" style="display:block">
         <div id="topBar">
             <div class="top-row">
-                <button onclick="toggleTheme()" style="width:auto; background:#9C27B0; padding:8px 15px; margin:0;">🌓 Theme</button>
-                <button onclick="doLogout()" style="width:auto; background:#CD5C5C; padding:8px 15px; margin:0;">Exit</button>
+                <button onclick="toggleTheme()" style="width:auto; background:var(--accent); padding:8px 15px; margin:0;">🌓 Theme</button>
+                <div style="text-align: center;">
+                <strong id="dispName" style="font-size: 1.3em; color:#2196F3;">My Life Manager</strong>
+            </div><button onclick="doLogout()" style="width:auto; background:#CD5C5C; padding:8px 15px; margin:0;">Exit</button>
             </div>
-            <div style="text-align: center;">
-                <strong id="dispName" style="font-size: 1.3em; color: var(--primary);">My Life Manager</strong>
-            </div>
+            
         </div>
+        <div><p style="font-weight:900; text-align: center">RECORDING GEARS</p></div>
 
         <div class="dashboard-grid">
-            <div class="action-card" onclick="openEntryModal('income')" style="border-top: 4px solid #4CAF50;"><span>💰</span><b>Income</b></div>
-            <div class="action-card" onclick="openEntryModal('expense')" style="border-top: 4px solid #F44336;"><span>💸</span><b>Expenses</b></div>
-            <div class="action-card" onclick="openTaskModal()" style="border-top: 4px solid #FF9800;"><span>📝</span><b>To-Do</b></div>
-            <div class="action-card" onclick="openTargetModal()" style="border-top: 4px solid #00BCD4;"><span>🎯</span><b>Target</b></div>
-            <div class="action-card" onclick="showYearlyReport()" style="border-top: 4px solid #2196F3;"><span>📊</span><b>Report</b></div>
-            <div class="action-card" onclick="openModal('settingsModal')" style="border-top: 4px solid #607D8B;"><span>⚙️</span><b>Settings</b></div>
+            <div class="action-card" onclick="openEntryModal('income')" style="border-top: 4px solid #4CAF50;"> Income/Inflows</b></div>
+            <div class="action-card" onclick="openEntryModal('expense')" style="border-top: 4px solid #4CAF50;">Expense/payments</div>
+            <div class="action-card" onclick="openTaskModal()" style="border-top: 4px solid #4CAF50;"> Record daily To-do</div>
+            <div class="action-card" onclick="openTargetModal()" style="border-top: 4px solid #4CAF50;"> Set Annual Target</div>
+            <div class="action-card" onclick="openModal('debtModal')" style="border-top: 4px solid #4CAF50;">Debtors & Creditors
+</div>
+                                    
+            <div class="action-card"style="border-top: 4px solid #4CAF50;" onclick="openModal('contraModal')"> Transfer Money</div>
+            
+            
         </div>
-
-        <div class="summary-box">
+        <div><p style="font-weight:900; text-align: center">SUMMARY</p></div>
+      <div class="summary-box">
+          
             <div style="color:green;">+ <span id="totalInc">0</span></div>
             <div style="color:red;">- <span id="totalExp">0</span></div>
-            <div style="border-left: 2px solid var(--border); padding-left: 10px;">Bal: <span id="totalBal">0</span></div>
+            <div style="border-left: 2px solid var(--border); padding-left: 10px;">Bal: <span id="totalBal">0</span></div></div>
+            
+       <div><p style="font-weight:900; text-align: center">READ ONLY REPORTS</p></div>
+       <div class="dashboard-grid"> 
+           <div onclick="switchView('cashView')"class="action-card"style="border-top: 4px solid #2196F3;" >View my Cashflows</div>
+           <div onclick="showYearlyReport()"class="action-card"style="border-top: 4px solid #2196F3;" >Income/exp graph</div>
+ 
+       <div onclick="switchView('budgetView')"class="action-card"style="border-top: 4px solid #2196F3;" > 50-30-20 analysis</div>
+              <div onclick="openIndependentDebtList()"class="action-card"style="border-top: 4px solid #2196F3;" > View debts & Credits</div>
+                         <div onclick="switchView('taskView')"class="action-card"style="border-top: 4px solid #2196F3;" >View my To-do</div>
+   
+       <div onclick="switchView('targetView')"class="action-card"style="border-top: 4px solid #2196F3;" > 🎯 Annual Targets</div>
+              
+       
+      
+  
+                
+    </div> 
+    <div class="action-card" onclick="openModal('settingsModal')" style="border-top: 4px solid #607D8B;"><b>⚙️Settings</b></div>
+      </div>
+    
+
+<div id="cashView" class="view-screen" style="display: none; flex-direction: column; height: 100vh;">
+    <div style="position: sticky; top: 0; background: white; z-index: 100; padding: 10px; border-bottom: 2px solid #f1f2f6;">
+        <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
+        <h3 style="margin: 10px 0 5px 0;">Finance Ledger</h3>
+        <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+            <select id="filterMonth" onchange="renderCashBook()" style="flex: 1; padding: 8px;">
+                <option value="all">All Months</option>
+                <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+                <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+                <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+                <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+            </select>
+            <select id="filterYear" onchange="renderCashBook()" style="flex: 1; padding: 8px;"></select>
         </div>
-
-        <button onclick="switchView('taskView')" style="background:var(--accent)">📋 Open Tasks</button>
-        <button onclick="switchView('targetView')" style="background:#0097A7">🎯 Annual Targets</button>
-        <button onclick="switchView('cashView')" style="background:var(--accent)">📖 View My Finances</button>
     </div>
 
-    <div id="taskView" class="view-screen">
-        <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
-        <section><h3>My Tasks</h3><ul id="taskList" style="list-style:none; padding:0;"></ul></section>
+    <div style="flex: 1; overflow-y: auto; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 90; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                <tr>
+                    <th style="padding: 10px; text-align: left;">Date</th>
+                    <th style="padding: 10px; text-align: left;">Details</th>
+                    <th style="padding: 10px; text-align: left;">Mode</th> 
+                    <th style="padding: 10px; text-align: left;">Amt</th>
+                    <th style="padding: 10px; text-align: left;">✖</th>
+                </tr>
+            </thead>
+            <tbody id="cashRows"></tbody>
+        </table>
     </div>
+</div>
 
-    <div id="targetView" class="view-screen">
-        <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
-        <section><h3>Annual Targets</h3><ul id="targetList" style="list-style:none; padding:0;"></ul></section>
-    </div>
-
-    <div id="cashView" class="view-screen">
-        <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
-        <section>
-            <h3>Finance Ledger</h3>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <select id="filterMonth" onchange="renderCashBook()" style="flex: 1;">
-                    <option value="all">All Months</option>
-                    <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
-                    <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
-                    <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
-                    <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
-                </select>
-                <select id="filterYear" onchange="renderCashBook()" style="flex: 1;"></select>
-            </div>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Date</th><th>Details</th><th>Amt</th><th>✖</th></tr></thead>
-                    <tbody id="cashRows"></tbody>
-                </table>
-            </div>
         </section>
     </div>
+</div>
+
+<div id="budgetView" class="view-screen">
+    <button class="back-btn" onclick="switchView('mainDashboard')">Back to Dashboard</button>
+    <section>
+        <h3>Monthly Budget Analysis</h3>
+        <p style="font-size: 0.8em; margin-top: -10px;">Goal: 50% Needs | 30% Wants | 20% Savings & investment</p>
+        
+        <div id="budgetStatus" style="padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            </div>
+
+        <div style="height: 250px;"><canvas id="budgetChart"></canvas></div>
+        
+        <div id="categoryBreakdown" style="margin-top: 20px;">
+            </div>
+    </section>
 </div>
 
 <div class="modal" id="taskModal"><div class="modalContent">
@@ -128,22 +186,104 @@
     <button onclick="closeModal('taskModal')" style="background:#636e72">Cancel</button>
 </div></div>
 
-<div class="modal" id="targetModal"><div class="modalContent">
-    <h3>New Target</h3>
-    <input id="targetInTitle" placeholder="Target Name">
-    <button onclick="submitTarget()" style="background:#00BCD4">Add Target</button>
-    <button onclick="closeModal('targetModal')" style="background:#636e72">Cancel</button>
-</div></div>
+<div class="modal" id="targetModal">
+    <div class="modalContent">
+        <h3>New Target</h3>
+        <p style="color:#00BCD4" >It should follow SMART criteria</p>
+        <input id="targetInTitle" placeholder="Target Name ">
+        
+        <label style="display:block; margin-top:10px; font-size:0.8em; color:gray;">Target Deadline:</label>
+        <input id="targetInDue" type="date">
+        
+        <button onclick="submitTarget()" style="background:#00BCD4">Add Target</button>
+        <button onclick="closeModal('targetModal')" style="background:#636e72">Cancel</button>
+    </div>
+</div>
+<div id="taskView" class="view-screen" style="display:none; flex-direction:column; height:100vh; overflow:hidden;">
+    <div style="position:sticky; top:0; background:white; z-index:100; padding:10px; border-bottom:1px solid #eee;">
+        <button class="back-btn" onclick="switchView('mainDashboard')" style="width:100%;">Back to Dashboard</button>
+        <h3 style="margin:10px 0 5px 0;">My Tasks</h3>
+    </div>
+    <section style="flex:1; overflow-y:auto; padding:10px;">
+        <ul id="taskList" style="list-style:none; padding:0;"></ul>
+    </section>
+</div>
 
+<div id="targetView" class="view-screen" style="display:none; flex-direction:column; height:100vh; overflow:hidden;">
+    <div style="position:sticky; top:0; background:white; z-index:100; padding:10px; border-bottom:1px solid #eee;">
+        <button class="back-btn" onclick="switchView('mainDashboard')" style="width:100%;">Back to Dashboard</button>
+        <h3 style="margin:10px 0 5px 0;">Annual Targets</h3>
+    </div>
+    <section style="flex:1; overflow-y:auto; padding:10px;">
+        <ul id="targetList" style="list-style:none; padding:0;"></ul>
+    </section>
+</div>
 <div class="modal" id="entryModal"><div class="modalContent">
     <h3 id="entryTitle">Add Entry</h3>
     <input id="entDesc" placeholder="Description">
     <input id="entAmt" type="number" placeholder="Amount">
-    <select id="entCat"><option value="General">General</option><option value="Business">Business</option></select>
+    
+    <select id="entCat">
+        <optgroup label="Income">
+            <option value="Income">Income</option>
+        </optgroup>
+        <optgroup label="Expenses (50-30-20)">
+            <option value="Necessity">Necessity</option>
+            <option value="Other">Wants</option>
+            <option value="Savings">Savings/Debt</option>
+        </optgroup>
+    </select>
+    <label>Account:</label>
+<select id="entAcc">
+    <option value="Cash">💵 Cash</option>
+    <option value="Bank">🏦 Bank</option>
+    <option value="MTN">🟡 MTN MoMo</option>
+    <option value="Airtel">🔴 Airtel Money</option>
+</select>
+    
     <input type="hidden" id="entType">
     <button onclick="submitEntry()">Save</button>
     <button onclick="closeModal('entryModal')" style="background:#636e72">Cancel</button>
+    
 </div></div>
+
+<div class="modal" id="contraModal">
+    <div class="modalContent">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🔄 Internal Transfer</h3>
+            <button onclick="toggleContraBalances()" style="width: auto; padding: 5px 10px; font-size: 0.7em; background: var(--accent);">📊 Check Balances</button>
+        </div>
+
+        <div id="contraBalancePreview" style="display:none; background: var(--li); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;" id="contraBalList">
+                </div>
+        </div>
+        
+        <p style="font-size:0.8em; color:gray;">Move funds without affecting your 50-30-20 budget.</p>
+        
+        <label>From:</label>
+        <select id="conFrom">
+            <option value="Cash">Cash</option>
+            <option value="Bank">Bank</option>
+            <option value="MTN">MTN MoMo</option>
+            <option value="Airtel">Airtel Money</option>
+        </select>
+
+        <label>To:</label>
+        <select id="conTo">
+            <option value="Cash">Cash</option>
+            <option value="Bank">Bank</option>
+            <option value="MTN">MTN MoMo</option>
+            <option value="Airtel">Airtel Money</option>
+        </select>
+
+        <label>Amount:</label>
+        <input id="conAmt" type="number" placeholder="0.00">
+
+        <button onclick="submitContra()" style="background:var(--primary)">Confirm Transfer</button>
+        <button onclick="closeModal('contraModal')" style="background:#636e72">Cancel</button>
+    </div>
+</div>
 
 <div class="modal" id="settingsModal"><div class="modalContent">
     <h3>Profile Settings</h3>
@@ -166,13 +306,92 @@
 </div></div>
 
 <div class="modal" id="customAlertModal"><div class="modalContent" style="text-align: center;"><h3 id="alertTitle"></h3><p id="alertMessage"></p><button onclick="closeModal('customAlertModal')">Okay</button></div></div>
+<div class="modal" id="debtModal" style="z-index: 1000 !important;">
+    <div class="modalContent" style="background: #ffffff; color: #2d3436; border: 1px solid #dfe6e9; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
+        <h3 style="color: #2196F3; margin-top: 0; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px;">👥 Debtors & Creditors</h3>
+        
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button onclick="showDebtSection('create')" style="flex:1; background:#f1f2f6; color:#2d3436; padding:10px; border-radius:8px; border:1px solid #dfe6e9; cursor:pointer; font-weight:900;">Record New</button>
+            <button onclick="showDebtSection('settle')" style="flex:1; background:#e8f5e9; color:#2e7d32; padding:10px; border-radius:8px; border:1px solid #c8e6c9; cursor:pointer; font-weight:900;">Settle / Pay</button>
+        </div>
+
+        <div id="createDebtSection">
+            <div style="margin-bottom:15px;">
+                <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Transaction Type</label>
+                <select id="dType" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; background:white; color:black;">
+                    <option value="debtor">Debtor (I am lending out)</option>
+                    <option value="creditor">Creditor (I am borrowing)</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Name</label>
+                <input id="dName" placeholder="e.g. John Doe" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; box-sizing: border-box; color:black;">
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Total Amount</label>
+                <input id="dAmt" type="number" placeholder="0.00" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; box-sizing: border-box; color:black;">
+            </div>
+            
+            <button onclick="saveNewDebt()" style="width:100%; background:#2196F3; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Create Record </button>
+        </div>
+
+        <div id="settleDebtSection">
+    <label>Select Person</label>
+    <select id="dSelect" onchange="refreshDebtBalance()" style="width:100%; margin-bottom:10px;"></select>
+    
+    <div id="dBalanceDisplay" style="padding:10px; background:#f0f0f0; margin-bottom:10px;"></div>
+
+    <label>Amount to Pay</label>
+    <input type="number" id="dPayAmt" placeholder="0.00" style="width:100%; margin-bottom:10px;">
+
+    <label>Payment Method</label>
+    <select id="dAccount" style="width:100%; margin-bottom:15px;">
+        <option value="Cash">Cash</option>
+        <option value="Mobile Money">Mobile Money</option>
+        <option value="Bank">Bank</option>
+    </select>
+
+    <button onclick="settleDebt()" style="width:100%; background:green; color:white; padding:10px;">Post Payment</button>
+</div>
+
+        <button onclick="closeModal('debtModal')" style="background:grey; color:white; margin-top:20px; border:1px solid #dfe6e9; width:100%; padding:10px; border-radius:8px; cursor:pointer;">Cancel & Close</button>
+    </div>
+</div>
+
+
+<div class="modal" id="debtViewModal" style="z-index: 9999 !important; display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+    <div class="modalContent" style="background: #ffffff; padding: 0; border-radius: 16px; max-width: 480px; width: 92%; margin: 50px auto; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 85vh;">
+        
+        <div style="position: sticky; top: 0; background: #ffffff; padding: 20px 25px; border-bottom: 1px solid #edf2f7; z-index: 10; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="color: #1a202c; margin: 0; font-size: 1.25rem; letter-spacing: -0.5px;">Debt Ledger</h3>
+                <p style="margin: 0; font-size: 0.75rem; color: #718096; font-weight: 500;">Current outstanding balances</p>
+            </div>
+            <button onclick="closeModal('debtViewModal')" style="background:#CD5C5C; border: none; width:auto; height: 32px; border-radius: 25%; font-size: 1.2rem; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center;">Close</button>
+        </div>
+
+        <div id="independentDebtContainer" style="padding: 10px 25px; overflow-y: auto; flex-grow: 1; background: #ffffff;">
+            <div style="text-align:center; padding:40px; color:#cbd5e0;">Loading ledger...</div>
+        </div>
+
+        <div style="padding: 20px 25px; background: #f8fafc; border-top: 1px solid #edf2f7;">
+            <div id="debtSummaryFooter">
+                </div>
+            
+            
+        </div>
+    </div>
+</div>
 
 <script>
-const db = new Dexie("LifeManagerDB_Full");
+const db = new Dexie("LifeManagerDB_Full2");
 db.version(1).stores({
     entries: '++id, d, t',
     targets: '++id, status',
     tasks: '++id, dueDate',
+    debts: '++id, name, type, balance',
     config: 'key'
 });
 
@@ -216,74 +435,135 @@ function switchView(viewId) {
     if(viewId === 'cashView') renderCashBook();
 }
 
-// Tasks logic
+
 async function submitTask() {
-    const title = document.getElementById('taskInTitle').value;
-    if(!title) return;
+    const titleEl = document.getElementById('taskInTitle');
+    if(!titleEl.value) return;
+
     await db.tasks.add({
-        title, category: document.getElementById('taskInCat').value,
+        title: titleEl.value,
+        category: document.getElementById('taskInCat').value,
         notes: document.getElementById('taskInNotes').value,
-        dueDate: document.getElementById('taskInDue').value
+        dueDate: document.getElementById('taskInDue').value,
+        status: 'pending' // Force initial status
     });
-    closeModal('taskModal'); renderTasks();
+
+    titleEl.value = "";
+    closeModal('taskModal');
+    renderTasks();
+    showAlert("Task added successfully!");
 }
 
+async function cycleTaskStatus(id, currentStatus) {
+    const nextStatus = currentStatus === 'pending' ? 'completed' : 'pending';
+    await db.tasks.update(id, { status: nextStatus });
+    renderTasks(); // Refresh the list
+}
 async function renderTasks() {
     const list = document.getElementById('taskList');
     if(!list) return;
     
     const tasks = await db.tasks.toArray();
-    const now = new Date(); // Get current time for comparison
+    const now = new Date();
 
     list.innerHTML = tasks.map(t => {
+        const currentStatus = t.status || 'pending';
+        const isDone = currentStatus === 'completed';
         let dueStr = "";
+        
         if(t.dueDate) {
             const d = new Date(t.dueDate);
-            // Check if current time is greater than the due time
-            const isOverdue = now > d; 
-            const statusColor = isOverdue ? "#f44336" : "#2196F3"; // Red if overdue, Blue if safe
-            const statusText = isOverdue ? "OVERDUE" : "Upcoming";
+            
+            // LOGIC: Only overdue if time passed AND NOT completed
+            const isOverdue = now > d && !isDone; 
+            
+            // Choose color and text based on status
+            const statusColor = isDone ? "#4CAF50" : (isOverdue ? "#f44336" : "#00BCD4");
+            const statusText = isDone ? "✅ Finished" : (isOverdue ? "⚠️ Overdue" : "📅 Upcoming");
 
             dueStr = `
                 <div style="color:${statusColor}; font-size:0.8rem; font-weight:bold; margin-top:5px;">
-                    ⏰ ${statusText}: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true})}
+                    ${statusText}: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true})}
                 </div>`;
         }
         
+        // Background color logic for the left border
+        const borderColor = isDone ? "#4CAF50" : (t.dueDate && now > new Date(t.dueDate) ? "#f44336" : "var(--accent)");
+
         return `
-            <li style="background:var(--li); padding:12px; margin:8px 0; border-radius:8px; border-left: 5px solid var(--warn);">
+            <li style="background:var(--li); padding:12px; margin:8px 0; border-radius:8px; border-left: 5px solid ${borderColor};">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div style="flex:1;">
-                        <b style="display:block; margin-bottom:2px;">${t.title}</b>
-                        <small style="color:#666;">${t.category || 'General'}</small>
+                    <div style="flex:1; ${isDone ? 'opacity:0.6;' : ''}">
+                        <b style="display:block; margin-bottom:2px; ${isDone ? 'text-decoration:line-through;' : ''}">${t.title}</b>
+                        <small style="background:var(--card); padding:2px 6px; border-radius:4px; font-size:0.75rem;">${t.category || 'General'}</small>
                         ${dueStr}
                         <p style="margin:5px 0 0 0; font-size:0.85rem; color:var(--text); opacity:0.8;">${t.notes || ''}</p>
                     </div>
-                    <button onclick="delTask(${t.id})" style="background:none; color:red; width:auto; padding:0; font-size:1.2rem;">Delete</button>
+                    <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                        <button class="status-btn ${currentStatus}" 
+                                onclick="cycleTaskStatus(${t.id}, '${currentStatus}')"
+                                style="padding:4px 8px; font-size:0.7rem; cursor:pointer;">
+                            ${currentStatus.toUpperCase()}
+                        </button>
+                        <button onclick="delTask(${t.id})" style="background:none; border:none; color:red; width:auto; padding:0; font-size:1.1rem; cursor:pointer;">🗑️</button>
+                    </div>
                 </div>
             </li>`;
     }).reverse().join('');
 }
 
-// Targets logic
+
 async function submitTarget() {
-    const title = document.getElementById('targetInTitle').value;
-    if(!title) return;
-    await db.targets.add({ title, status: 'pending' });
-    closeModal('targetModal'); renderTargets();
+    const titleEl = document.getElementById('targetInTitle');
+    const dueEl = document.getElementById('targetInDue');
+    
+    const title = titleEl.value;
+    const dueDate = dueEl.value;
+
+    if(!title || !dueDate) {
+        showAlert("Please enter both a target name and a deadline.");
+        return;
+    }
+
+    // --- LOGIC FOR COMMENT (Upcoming vs Overdue) ---
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+    const targetDate = new Date(dueDate);
+    
+    let statusComment = "";
+    if (targetDate < today) {
+        statusComment = "Overdue";
+    } else {
+        statusComment = "Upcoming";
+    }
+
+    try {
+        // Save to Database
+        await db.targets.add({
+            title: title,
+            dueDate: dueDate,
+            comment: statusComment, // Stores the status
+            status: 'pending'
+        });
+
+        // Clear Fields
+        titleEl.value = "";
+        dueEl.value = "";
+
+        // UI Updates
+        closeModal('targetModal');
+        if (typeof renderTargets === 'function') renderTargets();
+
+        // SUCCESS ALERT: Integrated with your custom alert
+        // We pass the title as the message and the status/date as the extra info
+        showAlert(`Target "${title}" saved as ${statusComment}`, dueDate);
+
+    } catch (err) {
+        console.error("Target Error:", err);
+        showAlert("Failed to save target.");
+    }
 }
 
-async function renderTargets() {
-    const list = document.getElementById('targetList');
-    if(!list) return;
-    const all = await db.targets.toArray();
-    list.innerHTML = all.map(t => `<li style="background:var(--card); border: 1px solid var(--border); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-        <span>${t.title}</span>
-        <div style="display:flex; gap:8px;">
-            <button class="status-btn ${t.status}" onclick="cycleTargetStatus(${t.id}, '${t.status}')">${t.status.toUpperCase()}</button>
-            <button onclick="delTarget(${t.id})" style="background:none; color:red; width:auto; padding:0;">🗑️</button>
-        </div></li>`).reverse().join('');
-}
 
 async function cycleTargetStatus(id, curr) {
     const next = curr === 'pending' ? 'completed' : (curr === 'completed' ? 'failed' : 'pending');
@@ -291,14 +571,62 @@ async function cycleTargetStatus(id, curr) {
     renderTargets();
 }
 
-// Finance logic
-async function submitEntry() {
-    const desc = document.getElementById("entDesc").value;
-    const amt = parseFloat(document.getElementById("entAmt").value);
-    if(!desc || isNaN(amt)) return;
-    await db.entries.add({ d: new Date().toISOString().split('T')[0], desc, t: document.getElementById("entType").value, a: amt, c: document.getElementById("entCat").value });
-    closeModal('entryModal'); renderCashBook();
+async function renderTargets() {
+    const list = document.getElementById('targetList');
+    if (!list) return;
+    
+    try {
+        const all = await db.targets.toArray();
+
+        if (all.length === 0) {
+            list.innerHTML = "";
+            return;
+        }
+
+        list.innerHTML = all.map(t => {
+            // Force status to be either 'completed' or 'pending'
+            const currentStatus = (t.status === 'completed') ? 'completed' : 'pending';
+            
+            // Set colors as requested: Green for completed, Orange for pending
+            const statusColor = currentStatus === 'completed' ? '#4CAF50' : '#FF9800';
+            const displayComment = currentStatus === 'completed' ? "✅ Done" : "📅 Upcoming";
+
+            return `
+            <li style="background:var(--card); border: 1px solid var(--border); margin:8px 0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <span style="font-weight:bold; font-size:1.1em; ${currentStatus === 'completed' ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
+                        ${t.title}
+                    </span>
+                    <span style="font-size:0.85em; color:var(--text-secondary);">
+                        Due: ${t.dueDate || 'No Date'} 
+                        <b style="color:${statusColor}; margin-left:8px;">(${displayComment})</b>
+                    </span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="status-btn" 
+                            onclick="cycleTargetStatus(${t.id}, '${currentStatus}')" 
+                            style="font-size:0.75em; padding:6px 12px; cursor:pointer; background:${statusColor}; color:white; border:none; border-radius:6px; font-weight:bold; min-width:90px; text-transform:uppercase;">
+                        ${currentStatus}
+                    </button>
+                    <button onclick="delTarget(${t.id})" 
+                            style="background:none; color:red; width:auto; padding:0; border:none; cursor:pointer; font-size:1.2em; margin-left:5px;">
+                        🗑️
+                    </button>
+                </div>
+            </li>`;
+        }).reverse().join('');
+    } catch (err) {
+        console.error(err);
+    }
 }
+
+// Logic for the two-state switch
+async function cycleTargetStatus(id, currentStatus) {
+    const newStatus = (currentStatus === 'completed') ? 'pending' : 'completed';
+    await db.targets.update(id, { status: newStatus });
+    renderTargets();
+}
+
 
 async function renderCashBook() {
     const body = document.getElementById("cashRows");
@@ -307,17 +635,32 @@ async function renderCashBook() {
     if(!body) return;
     const all = await db.entries.toArray();
     let inc=0, exp=0;
+    
     body.innerHTML = all.filter(en => {
         const d = new Date(en.d);
         return d.getFullYear() === y && (m === 'all' || d.getMonth() === parseInt(m));
     }).map(en => {
         en.t === 'income' ? inc += en.a : exp += en.a;
-        return `<tr><td>${en.d}</td><td>${en.desc}</td><td style="color:${en.t==='income'?'green':'red'}">${en.a.toLocaleString()}</td><td><button onclick="delEntry(${en.id})" style="background:red; padding:2px 8px; width:auto;">x</button></td></tr>`;
+        
+        // Added a column for en.account (the Mode) between Details and Amount
+        return `<tr>
+            <td>${en.d}</td>
+            <td>${en.desc}</td>
+            <td style="font-size:0.8em; font-weight:bold; color:var(--accent)">${en.account || '-'}</td>
+            <td style="color:${en.t==='income'?'green':'red'}">${en.a.toLocaleString()}</td>
+            <td><button onclick="delEntry(${en.id})" style="background:red; padding:2px 8px; width:auto;">x</button></td>
+        </tr>`;
     }).reverse().join('');
+    
     document.getElementById("totalInc").innerText = inc.toLocaleString();
     document.getElementById("totalExp").innerText = exp.toLocaleString();
     document.getElementById("totalBal").innerText = (inc - exp).toLocaleString();
+    
+    // Refresh account balances on dashboard if function exists
+    if(typeof updateAccountUI === 'function') updateAccountUI();
 }
+
+
 
 // Chart & Backup
 function initReportYears() {
@@ -368,6 +711,133 @@ function updateDuePreview() {
     const d = new Date(val);
     document.getElementById('duePreview').innerText = "Selected: " + d.toLocaleString([], {hour12:true});
 }
+let budgetChart = null;
+
+async function submitEntry() {
+    const descEl = document.getElementById('entDesc');
+    const amtEl = document.getElementById('entAmt');
+    const catEl = document.getElementById('entCat');
+    const typeEl = document.getElementById('entType');
+    const accEl = document.getElementById('entAcc');
+
+    const desc = descEl.value;
+    const amt = parseFloat(amtEl.value);
+    const cat = catEl.value;
+    const type = typeEl.value;
+    const acc = accEl.value;
+    const date = new Date().toISOString().split('T')[0]; 
+
+    // Validation using your existing showAlert
+    if(!desc || !amt) {
+        showAlert("Please enter both a description and an amount.");
+        return;
+    }
+
+    try {
+        // Save to Dexie DB
+        await db.entries.add({ 
+            desc: desc, 
+            a: amt, 
+            cat: cat, 
+            t: type, 
+            d: date, 
+            account: acc 
+        });
+
+        // Clear the fields for the next entry
+        descEl.value = "";
+        amtEl.value = "";
+        catEl.selectedIndex = 0;
+        accEl.selectedIndex = 0;
+
+        // Close the input modal
+        closeModal('entryModal');
+
+        // Refresh Ledger and Dashboards
+        renderCashBook();
+        if(typeof updateAccountUI === 'function') updateAccountUI();
+        if(document.getElementById('budgetView').style.display === 'block') renderBudget();
+
+        // INTEGRATED ALERT: Using your existing customAlertModal
+        showAlert("Success! Entry has been saved.");
+
+    } catch (err) {
+        console.error("Failed to save entry:", err);
+        showAlert("Error: Could not save data.");
+    }
+}
+
+
+async function renderBudget() {
+    const entries = await db.entries.toArray();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Filter current month data
+    const monthlyData = entries.filter(e => {
+        const d = new Date(e.d);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    let totalIncome = 0;
+    let spent = { Necessity: 0, Other: 0, Savings: 0 };
+
+    monthlyData.forEach(e => {
+        if(e.t === 'income') totalIncome += e.a;
+        else if(spent.hasOwnProperty(e.cat)) spent[e.cat] += e.a;
+    });
+
+    const goals = {
+        Necessity: totalIncome * 0.5,
+        Other: totalIncome * 0.3,
+        Savings: totalIncome * 0.2
+    };
+
+    // UI Update
+    const statusDiv = document.getElementById('budgetStatus');
+    statusDiv.style.background = (spent.Necessity + spent.Other + spent.Savings) > totalIncome ? '#ffebee' : '#e8f5e9';
+    statusDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between;">
+            <span>Monthly Income:</span> <b>${totalIncome.toLocaleString()}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:5px; border-top:1px solid #ccc;">
+            <span>Remaining:</span> <b>${(totalIncome - (spent.Necessity + spent.Other)).toLocaleString()}</b>
+        </div>
+    `;
+
+    // Chart Update
+    if(budgetChart) budgetChart.destroy();
+    budgetChart = new Chart(document.getElementById("budgetChart"), {
+        type: 'doughnut',
+        data: {
+            labels: ['Needs (Spent)', 'Wants (Spent)', 'Savings (Actual)'],
+            datasets: [{
+                data: [spent.Necessity, spent.Other, spent.Savings],
+                backgroundColor: ['#f44336', '#FF9800', '#4CAF50']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Breakdown Table
+    document.getElementById('categoryBreakdown').innerHTML = `
+        <table>
+            <tr><th>Category</th><th>Spent</th><th>Limit (50/30/20)</th></tr>
+            <tr><td>Needs</td><td>${spent.Necessity.toLocaleString()}</td><td>${goals.Necessity.toLocaleString()}</td></tr>
+            <tr><td>Wants</td><td>${spent.Other.toLocaleString()}</td><td>${goals.Other.toLocaleString()}</td></tr>
+            <tr><td>Savings</td><td>${spent.Savings.toLocaleString()}</td><td>${goals.Savings.toLocaleString()}</td></tr>
+        </table>
+    `;
+}
+
+// Update your switchView to trigger budget rendering
+const originalSwitchView = switchView;
+switchView = function(viewId) {
+    originalSwitchView(viewId);
+    if(viewId === 'budgetView') renderBudget();
+};
+
 function openEntryModal(t) { document.getElementById('entType').value = t; document.getElementById('entryTitle').innerText = t.toUpperCase(); openModal('entryModal'); }
 function openTaskModal() { openModal('taskModal'); }
 function openTargetModal() { openModal('targetModal'); }
@@ -394,6 +864,454 @@ setInterval(() => {
         renderTasks();
     }
 }, 60000);
+
+async function renderBudget() {
+    const entries = await db.entries.toArray();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const monthlyData = entries.filter(e => {
+        const d = new Date(e.d);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    let totalIncome = 0;
+    let spent = { Necessity: 0, Other: 0, Savings: 0 };
+
+    monthlyData.forEach(e => {
+        if(e.t === 'income') totalIncome += e.a;
+        else if(spent.hasOwnProperty(e.cat)) spent[e.cat] += e.a;
+    });
+
+    // 50-30-20 Calculation
+    const limits = {
+        Necessity: totalIncome * 0.5,
+        Other: totalIncome * 0.3,
+        Savings: totalIncome * 0.2 // This is the TARGET
+    };
+
+    let warningHTML = "";
+    
+    if (totalIncome > 0) {
+        // 1. WANTS CHECK (Limit)
+        if (spent.Other > limits.Other) {
+            warningHTML += `<div class="budget-warning">
+                ⚠️ <b>Discipline Alert (Wants):</b> Your spending on "Other" is out of discipline. 
+                You are ${ (spent.Other - limits.Other).toLocaleString() } over budget. 
+                <i>Reduce spending or increase income.</i>
+            </div>`;
+        }
+
+        // 2. SAVINGS CHECK (Target)
+        if (spent.Savings < limits.Savings) {
+            const shortfall = limits.Savings - spent.Savings;
+            warningHTML += `<div class="budget-warning" style="background:#e3f2fd; color:#0d47a1; border-left-color: #2196F3;">
+                🎯 <b>Savings Target Alert:</b> You are <b>${shortfall.toLocaleString()}</b> short of your 20% savings goal. 
+                Prioritize your future self—try to move funds from "Other" to "Savings".
+            </div>`;
+        }
+
+        // 3. NECESSITY CHECK (Risk)
+        if (spent.Necessity > limits.Necessity) {
+            warningHTML += `<div class="budget-warning" style="background:#f8d7da; color:#721c24;">
+                🚨 <b>Critical Alert:</b> Necessities are taking up ${Math.round((spent.Necessity/totalIncome)*100)}% of your income. 
+                This exceeds the safe 50% threshold.
+            </div>`;
+        }
+    }
+
+    // Update the Summary UI
+    const statusDiv = document.getElementById('budgetStatus');
+    statusDiv.innerHTML = `
+        <div style="margin-bottom:10px; font-size: 1.1em;">
+            <span>Current Month Income:</span> <b style="float:right;">${totalIncome.toLocaleString()}</b>
+        </div>
+        ${warningHTML} 
+    `;
+
+    renderBudgetChart(spent);
+    
+    // Update Table with color coding
+    document.getElementById('categoryBreakdown').innerHTML = `
+        <table>
+            <tr><th>Category</th><th>Actual</th><th>50-30-20 Goal</th></tr>
+            <tr style="${spent.Necessity > limits.Necessity ? 'color:#f44336; font-weight:bold;' : ''}">
+                <td>Necessities (50%)</td><td>${spent.Necessity.toLocaleString()}</td><td>${limits.Necessity.toLocaleString()}</td>
+            </tr>
+            <tr style="${spent.Other > limits.Other ? 'color:#f44336; font-weight:bold;' : ''}">
+                <td>Other/Wants (30%)</td><td>${spent.Other.toLocaleString()}</td><td>${limits.Other.toLocaleString()}</td>
+            </tr>
+            <tr style="${spent.Savings < limits.Savings ? 'color:#2196F3; font-weight:bold;' : 'color:#4CAF50;'}">
+                <td>Savings & in(20%)</td><td>${spent.Savings.toLocaleString()}</td><td>${limits.Savings.toLocaleString()}</td>
+            </tr>
+        </table>`;
+}
+// Helper function to handle the chart rendering
+function renderBudgetChart(spent) {
+    const ctx = document.getElementById("budgetChart");
+    if(!ctx) return; // Prevent error if canvas isn't on screen
+
+    if(budgetChart) budgetChart.destroy(); // Clear old chart instance
+    
+    budgetChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Necessities', 'Wants/Other', 'Savings'],
+            datasets: [{
+                data: [spent.Necessity, spent.Other, spent.Savings],
+                backgroundColor: ['#4CAF50', '#2196F3', '#FF9800'],
+                borderWidth: 1
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+async function updateAccountUI() {
+    const bal = await getAccountBalances();
+    // You can add a new div in your HTML with id="accountDisplay"
+    document.getElementById('accountDisplay').innerHTML = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+            <div class="action-card" style="padding:10px;">💵 Cash: <br><b>${bal.Cash.toLocaleString()}</b></div>
+            <div class="action-card" style="padding:10px;">🏦 Bank: <br><b>${bal.Bank.toLocaleString()}</b></div>
+            <div class="action-card" style="padding:10px;">🟡 MTN: <br><b>${bal.MTN.toLocaleString()}</b></div>
+            <div class="action-card" style="padding:10px;">🔴 Airtel: <br><b>${bal.Airtel.toLocaleString()}</b></div>
+        </div>
+    `;
+}
+
+// Function to open the Contra Modal
+function openContraModal() {
+    openModal('contraModal');
+}
+
+// The core Transfer logic
+async function submitContra() {
+    const from = document.getElementById('conFrom').value;
+    const to = document.getElementById('conTo').value;
+    const amt = parseFloat(document.getElementById('conAmt').value);
+    const date = new Date().toISOString().split('T')[0];
+
+    if (!amt || amt <= 0) {
+        alert("Please enter a valid amount");
+        return;
+    }
+    if (from === to) {
+        alert("Source and Destination accounts must be different.");
+        return;
+    }
+
+    try {
+        // 1. Record the Money Leaving the Source Account
+        await db.entries.add({ 
+            desc: `Transfer to ${to}`, 
+            a: amt, 
+            cat: 'Transfer', 
+            t: 'expense', 
+            account: from, 
+            d: date 
+        });
+
+        // 2. Record the Money Entering the Destination Account
+        await db.entries.add({ 
+            desc: `Transfer from ${from}`, 
+            a: amt, 
+            cat: 'Transfer', 
+            t: 'income', 
+            account: to, 
+            d: date 
+        });
+
+        closeModal('contraModal');
+        document.getElementById('conAmt').value = ''; // Reset input
+        
+        // Refresh UI
+        if (typeof renderCashBook === "function") renderCashBook();
+        if (typeof updateAccountUI === "function") updateAccountUI();
+        
+        alert("Transfer Successful!");
+    } catch (err) {
+        console.error("Transfer failed:", err);
+    }
+}
+
+// Function to calculate and show balances per account
+async function updateAccountUI() {
+    const all = await db.entries.toArray();
+    const bal = { Cash: 0, Bank: 0, MTN: 0, Airtel: 0 };
+    
+    all.forEach(en => {
+        if (bal.hasOwnProperty(en.account)) {
+            if (en.t === 'income') bal[en.account] += en.a;
+            else bal[en.account] -= en.a;
+        }
+    });
+
+    const display = document.getElementById('accountDisplay');
+    if (display) {
+        display.innerHTML = `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 15px 0;">
+                <div class="action-card" style="border-left: 4px solid #4CAF50;">💵 Cash<br><b>${bal.Cash.toLocaleString()}</b></div>
+                <div class="action-card" style="border-left: 4px solid #2196F3;">🏦 Bank<br><b>${bal.Bank.toLocaleString()}</b></div>
+                <div class="action-card" style="border-left: 4px solid #FFEB3B;">🟡 MTN<br><b>${bal.MTN.toLocaleString()}</b></div>
+                <div class="action-card" style="border-left: 4px solid #f44336;">🔴 Airtel<br><b>${bal.Airtel.toLocaleString()}</b></div>
+            </div>
+            
+        `;
+    }
+}
+
+async function toggleContraBalances() {
+    const previewDiv = document.getElementById('contraBalancePreview');
+    const listDiv = document.getElementById('contraBalList');
+    
+    // Toggle visibility
+    if (previewDiv.style.display === 'block') {
+        previewDiv.style.display = 'none';
+        return;
+    }
+    
+    // Calculate current balances
+    const all = await db.entries.toArray();
+    const bal = { Cash: 0, Bank: 0, MTN: 0, Airtel: 0 };
+    
+    all.forEach(en => {
+        if (bal.hasOwnProperty(en.account)) {
+            if (en.t === 'income') bal[en.account] += en.a;
+            else bal[en.account] -= en.a;
+        }
+    });
+
+    // Inject into the modal's preview area
+    listDiv.innerHTML = `
+        <span>💵 Cash: <b>${bal.Cash.toLocaleString()}</b></span>
+        <span>🏦 Bank: <b>${bal.Bank.toLocaleString()}</b></span>
+        <span>🟡 MTN: <b>${bal.MTN.toLocaleString()}</b></span>
+        <span>🔴 Airtel: <b>${bal.Airtel.toLocaleString()}</b></span>
+    `;
+    
+    previewDiv.style.display = 'block';
+}
+
+function showDebtSection(tab) {
+    document.getElementById('createDebtSection').style.display = tab === 'create' ? 'block' : 'none';
+    document.getElementById('settleDebtSection').style.display = tab === 'settle' ? 'block' : 'none';
+    if(tab === 'settle') loadDebtDropdown();
+}
+
+async function loadDebtDropdown() {
+    const dropdown = document.getElementById('dSelect');
+    if (!dropdown) return;
+
+    try {
+        // This line is the "filter" - it ignores anyone with 0 balance
+        const active = await db.debts.where('balance').above(0).toArray();
+        
+        if (active.length === 0) {
+            dropdown.innerHTML = '<option value="">-- No Active Debts --</option>';
+            document.getElementById('dBalanceDisplay').innerText = "All accounts settled!";
+            return;
+        }
+
+        dropdown.innerHTML = '<option value="">-- Choose Person --</option>' + 
+            active.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
+            
+    } catch (error) {
+        console.error("List Load Error:", error);
+        alert("Database Error: " + error.message);
+    }
+}
+
+async function refreshDebtBalance() {
+    const id = document.getElementById('dSelect').value;
+    const display = document.getElementById('dBalanceDisplay');
+    
+    // If no one is selected, clear the display
+    if (!id) { 
+        display.innerText = "Select a person to see balance."; 
+        return; 
+    }
+    
+    try {
+        const record = await db.debts.get(parseInt(id));
+        if (record) {
+            display.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Current Balance:</span>
+                    <b style="color:#4CAF50; font-size:1.2em;">${record.balance.toLocaleString()}</b>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error("Error fetching balance:", error);
+    }
+}
+
+async function saveNewDebt() {
+    const name = document.getElementById('dName').value;
+    const amount = parseFloat(document.getElementById('dAmt').value);
+    const type = document.getElementById('dType').value; // 'debtor' or 'creditor'
+    const account = document.getElementById('dAccount')?.value || 'Cash';
+
+    if(!name || isNaN(amount)) return showAlert("Enter name and amount");
+
+    // 1. Create the Debt Record for tracking
+    await db.debts.add({ name, type, balance: amount, original: amount });
+
+    // 2. Record as INFLOW in Cashbook
+    await db.entries.add({
+        desc: `Acquisition: ${name} (${type})`,
+        a: amount,
+        cat: 'Debt Acquisition',
+        t: 'income', // Forced as Inflow
+        d: new Date().toISOString().split('T')[0],
+        account: account
+    });
+    
+    showAlert(`Acquisition Recorded: +${amount.toLocaleString()} Inflow`);
+    document.getElementById('dName').value = "";
+    document.getElementById('dAmt').value = "";
+    if(typeof renderCashBook === 'function') renderCashBook();
+    showDebtSection('settle');
+}
+
+async function settleDebt() {
+    // 1. Grab elements with safety checks
+    const elSelect = document.getElementById('dSelect');
+    const elAmount = document.getElementById('dPayAmt');
+    const elAccount = document.getElementById('dAccount');
+
+    // 2. Identification check - if any are null, stop and alert
+    if (!elSelect || !elAmount || !elAccount) {
+        console.error("Missing Elements:", { elSelect, elAmount, elAccount });
+        return showAlert("UI Error: Settle fields not found in the current view.");
+    }
+
+    const id = parseInt(elSelect.value);
+    const payAmt = parseFloat(elAmount.value);
+    const account = elAccount.value;
+
+    if(!id || isNaN(payAmt)) return showAlert("Select person and amount");
+
+    try {
+        const record = await db.debts.get(id);
+        if (!record) return showAlert("Record not found.");
+
+        const newBal = record.balance - payAmt;
+        if (newBal < 0) return showAlert("Payment exceeds balance!");
+
+        // Update Database
+        await db.debts.update(id, { balance: newBal });
+
+        // Correct Cashflow: 
+        // If I pay a Creditor = Expense. If a Debtor pays me = Income.
+        const entryType = (record.type === 'debtor') ? 'income' : 'expense';
+
+        await db.entries.add({
+            desc: `Settlement: ${record.name}`,
+            a: payAmt,
+            cat: 'Debt Settlement',
+            t: entryType,
+            d: new Date().toISOString().split('T')[0],
+            account: account
+        });
+
+        showAlert(`Success: ${payAmt.toLocaleString()} recorded.`);
+
+        // --- CLEAR FIELDS ---
+        elAmount.value = "";
+        
+        // Refresh UI
+        if (typeof loadDebtDropdown === 'function') await loadDebtDropdown();
+        if (typeof refreshDebtBalance === 'function') refreshDebtBalance();
+        if (typeof renderCashBook === 'function') renderCashBook();
+
+    } catch (err) {
+        console.error("Settlement Error:", err);
+    }
+}
+
+async function renderDebtStatusList() {
+    const active = await db.debts.where('balance').above(0).toArray();
+    const container = document.getElementById('debtListContainer');
+    if(!container) return;
+
+    container.innerHTML = active.map(d => `
+        <div style="padding:10px; border-bottom:1px solid #34495e; display:flex; justify-content:space-between;">
+            <span>${d.name} <small>(${d.type})</small></span>
+            <b style="color:#4b7cf3;">${d.balance.toLocaleString()}</b>
+        </div>
+    `).join('');
+}
+
+async function openIndependentDebtList() {
+    openModal('debtViewModal');
+    const container = document.getElementById('independentDebtContainer');
+    const footer = document.getElementById('debtSummaryFooter');
+    
+    try {
+        const allDebts = await db.debts.where('balance').above(0).toArray();
+        
+        if (allDebts.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:40px; color:#b2bec3;">
+                <p style="font-size:3em; margin:0;">✅</p>
+                <p>No outstanding balances!</p>
+            </div>`;
+            footer.innerHTML = "";
+            return;
+        }
+
+        let totalOwedToMe = 0; // Debtors
+        let totalIOwe = 0;     // Creditors
+
+        let html = '';
+        allDebts.forEach(d => {
+            const isDebtor = d.type === 'debtor';
+            if (isDebtor) totalOwedToMe += d.balance;
+            else totalIOwe += d.balance;
+
+            html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f8f9fa;">
+                <div>
+                    <div style="font-weight:600; color:#2d3436;">${d.name}</div>
+                    <div style="font-size:0.75em; color:#636e72; text-transform:uppercase;">${isDebtor ? 'Owes Me' : 'I Owe'}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:bold; color:${isDebtor ? '#2ecc71' : '#e74c3c'};">
+                        ${isDebtor ? '+' : '-'}${d.balance.toLocaleString()}
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+
+        // Render the Summary Box
+        footer.innerHTML = `
+            <div style="background:#f8f9fa; padding:15px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:#636e72; font-size:0.9em;">Total debtors:</span>
+                    <span style="color:#2ecc71; font-weight:bold;">${totalOwedToMe.toLocaleString()}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:#636e72; font-size:0.9em;">Total creditors:</span>
+                    <span style="color:#e74c3c; font-weight:bold;">${totalIOwe.toLocaleString()}</span>
+                </div>
+            </div>
+        `;
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = "Unable to load ledger.";
+    }
+}
 
 </script>
 <script>
