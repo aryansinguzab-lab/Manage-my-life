@@ -5,7 +5,6 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
-  "id": "life-manager-pwa",
   "icons": [
     {
       "src": "icon.png",
