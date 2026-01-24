@@ -277,7 +277,7 @@
         <optgroup label="Expenses (50-30-20)">
             <option value="Necessity">Necessity</option>
             <option value="Other">Wants</option>
-            <option value="Savings">Savings/Debt</option>
+            <option value="Savings">Savings & investment</option>
         </optgroup>
     </select>
     <label>Account:</label>
@@ -1138,7 +1138,7 @@ async function renderBudget() {
                 <td>Other/Wants (30%)</td><td>${spent.Other.toLocaleString()}</td><td>${limits.Other.toLocaleString()}</td>
             </tr>
             <tr style="${spent.Savings < limits.Savings ? 'color:#2196F3; font-weight:bold;' : 'color:#4CAF50;'}">
-                <td>Savings & in(20%)</td><td>${spent.Savings.toLocaleString()}</td><td>${limits.Savings.toLocaleString()}</td>
+                <td>Savings & investment(20%)</td><td>${spent.Savings.toLocaleString()}</td><td>${limits.Savings.toLocaleString()}</td>
             </tr>
         </table>`;
 }
