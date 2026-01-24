@@ -460,48 +460,62 @@ let myChart = null;
 const currentYear = new Date().getFullYear();
 
 async function initApp() {
+    // 1. Request Persistent Storage (Don't 'return' here, just let it run)
+    if (navigator.storage && navigator.storage.persist) {
+        try {
+            let isPersisted = await navigator.storage.persisted();
+            if (!isPersisted) {
+                await navigator.storage.persist();
+            }
+        } catch (e) {
+            console.log("Storage persistence check failed", e);
+        }
+    }
+
     try {
-        // 1. Ensure DB is connected before doing anything
+        // 2. Ensure DB is connected
         await db.open();
 
-        // 2. Fetch configurations
+        // 3. Fetch configurations
         const [s, sec] = await Promise.all([
             db.config.get('settings'),
             db.config.get('security')
         ]);
 
-        if(s) settings = s.val;
-        if(sec) security = sec.val;
+        if(s && s.val) settings = s.val;
+        if(sec && sec.val) security = sec.val;
         
-        // 3. Setup Year Dropdown
+        // 4. Setup Year Dropdown
         const yearSel = document.getElementById('filterYear');
-        if(yearSel && yearSel.options.length <= 1) { // Prevent duplicate options on refresh
-            yearSel.innerHTML = ''; // Clear existing
-            for(let i=2024; i<=2100; i++) {
-                yearSel.options.add(new Option(i, i, i===currentYear, i===currentYear));
+        const cYear = new Date().getFullYear(); // Safe local fallback for currentYear
+
+        if(yearSel) {
+            yearSel.innerHTML = ''; // Always clear to avoid duplicates
+            for(let i = 2024; i <= 2100; i++) {
+                // Check against the global currentYear if it exists, otherwise use cYear
+                const isSelected = (typeof currentYear !== 'undefined') ? i === currentYear : i === cYear;
+                yearSel.options.add(new Option(i, i, isSelected, isSelected));
             }
         }
 
-        // 4. Run Trial System Check
+        // 5. Run Trial System Check
         await handleTrialSystem();
 
-        // 5. Render UI
+        // 6. Render UI
         initReportYears();
         applySettingsUI();
-        await renderCashBook(); // Wait for data to render
-        await updateAccountUI(); // Show balances immediately
+        await renderCashBook(); 
+        await updateAccountUI(); 
 
     } catch (err) {
         console.error("Critical Init Error:", err);
-        // If it fails, try to reload once
-        if (!window.location.hash) {
+        // Fail-safe: if the DB is locked or corrupted, reload might help
+        if (!window.location.hash.includes('reloaded')) {
             window.location.hash = 'reloaded';
             location.reload();
         }
     }
 }
-
-
 
 
 // --- 1. ALPHABETICAL DEBT DROPDOWN ---
@@ -1438,6 +1452,8 @@ async function renderDebtStatusList() {
     `).join('');
 }
 
+
+    
 async function openIndependentDebtList() {
     openModal('debtViewModal');
     const container = document.getElementById('independentDebtContainer');
@@ -1501,7 +1517,15 @@ async function openIndependentDebtList() {
 }
 
 </script>
-
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered!'))
+      .catch(err => console.log('Registration failed: ', err));
+  });
+}
+    </script>
 <div id="trialBadge">Trial: <span id="daysLeft">--</span> days left</div>
 
 <div id="expiryLock">
@@ -1517,16 +1541,7 @@ async function openIndependentDebtList() {
         <input type="password" id="unlockCodeInput" placeholder="Enter Activation Code">
         <button onclick="checkUnlockCode()" style="background:#4CAF50;">Activate Forever</button>
     </div>
-</div>
-    <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker registered!'))
-      .catch(err => console.log('Registration failed: ', err));
-  });
-}
-    </script>
+</div>        
 
 </body>    
 </html>
