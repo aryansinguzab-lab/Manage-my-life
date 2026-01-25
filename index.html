@@ -113,7 +113,7 @@
             <input id="loginPass" type="password" placeholder="Enter Password" autofocus>
             <button type="button" class="toggle-btn" onclick="togglePassword('loginPass')">👁️</button>
         </div>
-        <button onclick="doLogin()"style="background:#2196F3">Enter App</button>
+        <button onclick="doLogin()"style="background:#2196F3">Enter</button>
     </section>
 </div>
 
@@ -132,9 +132,9 @@
 
         <div class="dashboard-grid">
             <div class="action-card" onclick="openEntryModal('income')" style="border-top: 4px solid #4CAF50;"> Income/Inflows</b></div>
-            <div class="action-card" onclick="openEntryModal('expense')" style="border-top: 4px solid #4CAF50;">Expense/payments</div>
-            <div class="action-card" onclick="openTaskModal()" style="border-top: 4px solid #4CAF50;"> Record daily To-do</div>
-            <div class="action-card" onclick="openTargetModal()" style="border-top: 4px solid #4CAF50;"> Set Annual Target</div>
+            <div class="action-card" onclick="openEntryModal('expense')" style="border-top: 4px solid #4CAF50;">Expenses/Outflows</div>
+            <div class="action-card" onclick="openTaskModal()" style="border-top: 4px solid #4CAF50;"> Daily To-do</div>
+            <div class="action-card" onclick="openTargetModal()" style="border-top: 4px solid #4CAF50;"> Annual Targets</div>
             <div class="action-card" onclick="openModal('debtModal')" style="border-top: 4px solid #4CAF50;">Debtors & Creditors
 </div>
                                     
@@ -142,7 +142,7 @@
             
             
         </div>
-        <div><p style="font-weight:900; text-align: center">SUMMARY</p></div>
+        <div><p style="font-weight:900; text-align: center">FINANCIAL SUMMARY</p></div>
       <div class="summary-box">
           
             <div style="color:green;">+ <span id="totalInc">0</span></div>
@@ -151,12 +151,12 @@
             
        <div><p style="font-weight:900; text-align: center">READ ONLY REPORTS</p></div>
        <div class="dashboard-grid"> 
-           <div onclick="switchView('cashView')"class="action-card"style="border-top: 4px solid #2196F3;" >View my Cashflows</div>
+           <div onclick="switchView('cashView')"class="action-card"style="border-top: 4px solid #2196F3;" >My Cashflows</div>
            <div onclick="showYearlyReport()"class="action-card"style="border-top: 4px solid #2196F3;" >Income/exp graph</div>
  
        <div onclick="switchView('budgetView')"class="action-card"style="border-top: 4px solid #2196F3;" > 50-30-20 analysis</div>
-              <div onclick="openIndependentDebtList()"class="action-card"style="border-top: 4px solid #2196F3;" > View debts & Credits</div>
-                         <div onclick="switchView('taskView')"class="action-card"style="border-top: 4px solid #2196F3;" >View my To-do</div>
+              <div onclick="openIndependentDebtList()"class="action-card"style="border-top: 4px solid #2196F3;" > Debts & Credits</div>
+                         <div onclick="switchView('taskView')"class="action-card"style="border-top: 4px solid #2196F3;" >My To-do</div>
    
        <div onclick="switchView('targetView')"class="action-card"style="border-top: 4px solid #2196F3;" > 🎯 Annual Targets</div>
               
@@ -227,7 +227,7 @@
     <label style="font-size: 0.8rem;">Due Date & Time:</label>
     <input type="datetime-local" id="taskInDue" onchange="updateDuePreview()">
     <p id="duePreview" style="font-size: 0.9rem; color: var(--warn);"></p>
-    <select id="taskInCat"><option value="General">General</option><option value="Business">Business</option></select>
+    <select id="taskInCat"><option value="Personal">Personal</option><option value="Business">Business</option></select>
     <textarea id="taskInNotes" placeholder="Notes..." rows="2"></textarea>
     <button onclick="submitTask()">Save Task</button>
     <button onclick="closeModal('taskModal')" style="background:#636e72">Cancel</button>
@@ -352,7 +352,15 @@
     <button onclick="closeModal('reportModal')" style="background:#f44336">Close</button>
 </div></div>
 
-<div class="modal" id="customAlertModal"><div class="modalContent" style="text-align: center;z-index: 9999;"><h3 id="alertTitle"></h3><p id="alertMessage"></p><button onclick="closeModal('customAlertModal')">Okay</button></div></div>
+<div id="customAlertModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:white; padding:20px; border-radius:12px; width:90%; max-width:320px; text-align:center;">
+        <h3 id="alertTitle" style="margin-top:0;">Notice</h3>
+        <p id="alertMessage" style="color:#636e72; margin-bottom:20px;"></p>
+        
+        <div id="alertActionButtons" style="display:flex; gap:10px;"></div>
+    </div>
+</div>
+
 
 <div class="modal" id="debtModal" style="z-index: 1000 !important; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 450px; display: none;">
     <div class="modalContent" style="background: #ffffff; color: #2d3436; border: 1px solid #dfe6e9; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
@@ -381,9 +389,21 @@
                 <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Total Amount</label>
                 <input id="dAmt" type="number" placeholder="0.00" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; box-sizing: border-box; color:black;">
             </div>
-            
+            <div id="createDebtSection">
+    <div style="margin-bottom:15px;">
+        <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Mode of Acquisition</label>
+        <select id="dAcqAccount" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:6px; background:white; color:black;">
+            <option value="Cash">Cash</option>
+            <option value="MTN">MTN mobile money</option>
+            <option value="Bank">Bank</option>
+              <option value="Airtel">Airtel money</option>
+        </select>
+    </div>
+
+    
             <button onclick="saveNewDebt()" style="width:100%; background:#2196F3; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Create Record </button>
         </div>
+            </div>
 
         <div id="settleDebtSection" style="display:none;">
             <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Select Person</label>
@@ -397,14 +417,24 @@
             <label style="font-size:0.85em; font-weight:bold; color:#636e72;">Payment Method</label>
             <select id="dAccount" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #dfe6e9;">
                 <option value="Cash">Cash</option>
-                <option value="Mobile Money">Mobile Money</option>
                 <option value="Bank">Bank</option>
+                <option value="MTN">MTN mobile money</option>
+                <option value="Airtel">Airtel money</option>
             </select>
 
             <button onclick="settleDebt()" style="width:100%; background:#2e7d32; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Post Payment</button>
         </div>
 
-        <button onclick="closeModal('debtModal')" style="background:#b2bec3; color:white; margin-top:20px; border:none; width:100%; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Cancel & Close</button>
+        <button onclick="closeModal('debtModal')" style="background:grey; color:white; margin-top:20px; border:none; width:100%; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Cancel & Close</button>
+    </div>
+</div>
+    
+<div class="modal" id="customAlertModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+    <div class="modalContent" style="background:white; padding:25px; border-radius:15px; width:90%; max-width:320px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <h3 id="alertTitle" style="margin-top:0;"></h3>
+        <p id="alertMessage" style="color:#636e72; line-height:1.5;"></p>
+        
+        <div id="alertActionButtons" style="display:flex; gap:10px; margin-top:20px;"></div>
     </div>
 </div>
 
@@ -447,7 +477,7 @@ db.version(1).stores({
 });
 
 // 2. CONFIGURATION (Only one set of these allowed!)
-const TRIAL_DAYS = 14;
+const TRIAL_DAYS = 7;
 const ACTIVATION_CODE = "LOSCA-2p0r2o6";
 
 
@@ -622,24 +652,6 @@ function switchView(viewId) {
 }
 
 
-async function submitTask() {
-    const titleEl = document.getElementById('taskInTitle');
-    if(!titleEl.value) return;
-
-    await db.tasks.add({
-        title: titleEl.value,
-        category: document.getElementById('taskInCat').value,
-        notes: document.getElementById('taskInNotes').value,
-        dueDate: document.getElementById('taskInDue').value,
-        status: 'pending' // Force initial status
-    });
-
-    titleEl.value = "";
-    closeModal('taskModal');
-    renderTasks();
-    showAlert("Task added successfully!");
-}
-
 async function cycleTaskStatus(id, currentStatus) {
     const nextStatus = currentStatus === 'pending' ? 'completed' : 'pending';
     await db.tasks.update(id, { status: nextStatus });
@@ -698,6 +710,58 @@ async function renderTasks() {
     }).reverse().join('');
 }
 
+// Function to handle the date preview text
+function updateDuePreview() {
+    const dueInput = document.getElementById('taskInDue');
+    const preview = document.getElementById('duePreview');
+    if (!dueInput || !preview) return;
+
+    if (!dueInput.value) {
+        preview.innerText = "";
+        return;
+    }
+
+    const d = new Date(dueInput.value);
+    const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    preview.innerText = "Scheduled for: " + d.toLocaleString(undefined, options);
+}
+
+// Updated submitTask with full field clearing
+async function submitTask() {
+    const titleEl = document.getElementById('taskInTitle');
+    const dueEl = document.getElementById('taskInDue');
+    const catEl = document.getElementById('taskInCat');
+    const notesEl = document.getElementById('taskInNotes');
+    const previewEl = document.getElementById('duePreview');
+
+    // Validation
+    if(!titleEl.value) return showAlert("Please enter a task title");
+
+    try {
+        await db.tasks.add({
+            title: titleEl.value,
+            category: catEl.value,
+            notes: notesEl.value,
+            dueDate: dueEl.value,
+            status: 'pending'
+        });
+
+        // --- CLEAR ALL FIELDS ---
+        titleEl.value = "";
+        dueEl.value = "";
+        notesEl.value = "";
+        catEl.selectedIndex = 0; // Reset dropdown
+        if (previewEl) previewEl.innerText = ""; // Clear the "Scheduled for..." text
+
+        closeModal('taskModal');
+        if (typeof renderTasks === 'function') renderTasks();
+        showAlert("Task added successfully!");
+
+    } catch (err) {
+        console.error("Task Error:", err);
+        showAlert("Failed to save task.");
+    }
+}
 
 async function submitTarget() {
     const titleEl = document.getElementById('targetInTitle');
@@ -890,23 +954,10 @@ async function importData() {
 // Utility
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function showAlert(m) { 
-    // Set the text
-    document.getElementById('alertTitle').innerText = "Notice"; 
-    document.getElementById('alertMessage').innerText = m; 
-    
-    // 1. Get the alert element
-    const alertModal = document.getElementById('customAlertModal');
-    
-    // 2. Force it to be visible and at the very top
-    alertModal.style.display = 'flex'; 
-    alertModal.style.zIndex = "9999"; 
-    
-    // 3. Optional: If you use a general openModal function, call it here
-    openModal('customAlertModal'); 
-}
 
 let budgetChart = null;
+
+
 
 async function submitEntry() {
     const descEl = document.getElementById('entDesc');
@@ -962,6 +1013,90 @@ async function submitEntry() {
     }
 }
 
+function showConfirm(m, type = 'confirm') {
+    return new Promise((resolve) => {
+        const alertModal = document.getElementById('customAlertModal');
+        const btnContainer = document.getElementById('alertActionButtons');
+        
+        // 1. Set text
+        document.getElementById('alertTitle').innerText = (type === 'alert') ? "Notice" : "Are you sure?";
+        document.getElementById('alertMessage').innerText = m;
+
+        // 2. Clear existing buttons
+        btnContainer.innerHTML = '';
+
+        if (type === 'alert') {
+            // ONLY OK BUTTON
+            btnContainer.innerHTML = `
+                <button id="okBtn" style="width:100%; background:#2196F3; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">OK</button>
+            `;
+            document.getElementById('okBtn').onclick = () => { alertModal.style.display = 'none'; resolve(true); };
+        } else {
+            // TWO BUTTONS: YES AND NO
+            btnContainer.innerHTML = `
+                <button id="btnYes" style="flex:1; background:#e74c3c; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Yes, Delete</button>
+                <button id="btnNo" style="flex:1; background:#b2bec3; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Cancel</button>
+            `;
+            document.getElementById('btnYes').onclick = () => { alertModal.style.display = 'none'; resolve(true); };
+            document.getElementById('btnNo').onclick = () => { alertModal.style.display = 'none'; resolve(false); };
+        }
+
+        // 3. Show Modal
+        alertModal.style.display = 'flex';
+        alertModal.style.zIndex = "9999";
+    });
+}
+
+// Keep showAlert for your other messages
+function showAlert(m) {
+    showConfirm(m, 'alert');
+}
+
+
+async function delTask(id) {
+    if (await showConfirm("Delete this task?")) {
+        await db.tasks.delete(id);
+        renderTasks();
+    }
+}
+
+async function delTarget(id) {
+    if (await showConfirm("Remove this target permanently?")) {
+        await db.targets.delete(id);
+        renderTargets();
+    }
+}
+
+async function delEntry(id) {
+    if (await showConfirm("Delete this transaction?")) {
+        await db.entries.delete(id);
+        renderCashBook();
+    }
+}
+
+
+async function doLogout() {
+    
+        location.reload();
+    }
+
+
+function showAlert(m) {
+    document.getElementById('alertTitle').innerText = "Notice"; 
+    document.getElementById('alertMessage').innerText = m; 
+    
+    const btnContainer = document.getElementById('alertActionButtons');
+    btnContainer.innerHTML = `
+        <button onclick="document.getElementById('customAlertModal').style.display='none'" 
+                style="width:100%; background:#2196F3; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">
+            OK
+        </button>
+    `;
+
+    const alertModal = document.getElementById('customAlertModal');
+    alertModal.style.display = 'flex'; 
+    alertModal.style.zIndex = "9999"; 
+}
 
 async function renderBudget() {
     const entries = await db.entries.toArray();
@@ -1046,10 +1181,7 @@ async function saveSettings() {
     await db.config.put({key:'settings', val:settings});
     applySettingsUI(); closeModal('settingsModal'); showAlert("Saved");
 }
-async function delTask(id) { await db.tasks.delete(id); renderTasks(); }
-async function delTarget(id) { await db.targets.delete(id); renderTargets(); }
-async function delEntry(id) { await db.entries.delete(id); renderCashBook(); }
-function doLogout() { location.reload(); }
+
 
 initApp();
 
@@ -1094,7 +1226,7 @@ async function renderBudget() {
             warningHTML += `<div class="budget-warning">
                 ⚠️ <b>Discipline Alert (Wants):</b> Your spending on "Other" is out of discipline. 
                 You are ${ (spent.Other - limits.Other).toLocaleString() } over budget. 
-                <i>Reduce spending or increase income.</i>
+                <i>Reduce luxurious spending or work harder to increase your income.</i>
             </div>`;
         }
 
@@ -1103,7 +1235,7 @@ async function renderBudget() {
             const shortfall = limits.Savings - spent.Savings;
             warningHTML += `<div class="budget-warning" style="background:#e3f2fd; color:#0d47a1; border-left-color: #2196F3;">
                 🎯 <b>Savings Target Alert:</b> You are <b>${shortfall.toLocaleString()}</b> short of your 20% savings goal. 
-                Prioritize your future self—try to move funds from "Other" to "Savings".
+                Prioritize your future by diverting your income to "Savings".
             </div>`;
         }
 
@@ -1354,31 +1486,37 @@ async function refreshDebtBalance() {
         console.error("Error fetching balance:", error);
     }
 }
-
 async function saveNewDebt() {
     const name = document.getElementById('dName').value;
     const amount = parseFloat(document.getElementById('dAmt').value);
-    const type = document.getElementById('dType').value; // 'debtor' or 'creditor'
-    const account = document.getElementById('dAccount')?.value || 'Cash';
+    const type = document.getElementById('dType').value; 
+    // Get account from the new acquisition dropdown
+    const account = document.getElementById('dAcqAccount').value;
 
     if(!name || isNaN(amount)) return showAlert("Enter name and amount");
 
-    // 1. Create the Debt Record for tracking
+    // 1. Create the Debt Record
     await db.debts.add({ name, type, balance: amount, original: amount });
 
-    // 2. Record as INFLOW in Cashbook
+    // 2. Logic: Lending money (debtor) is an OUTFLOW. Borrowing (creditor) is an INFLOW.
+    const entryType = (type === 'debtor') ? 'expense' : 'income';
+    const symbol = (type === 'debtor') ? '-' : '+';
+
     await db.entries.add({
-        desc: `Acquisition: ${name} (${type})`,
+        desc: `Debt ${type === 'debtor' ? 'Given to' : 'Taken from'}: ${name}`,
         a: amount,
         cat: 'Debt Acquisition',
-        t: 'income', // Forced as Inflow
+        t: entryType,
         d: new Date().toISOString().split('T')[0],
         account: account
     });
     
-    showAlert(`Acquisition Recorded: +${amount.toLocaleString()} Inflow`);
+    showAlert(`Record Created: ${symbol}${amount.toLocaleString()} (${entryType})`);
+    
+    // Reset fields
     document.getElementById('dName').value = "";
     document.getElementById('dAmt').value = "";
+    
     if(typeof renderCashBook === 'function') renderCashBook();
     showDebtSection('settle');
 }
@@ -1526,6 +1664,7 @@ if ('serviceWorker' in navigator) {
   });
 }
     </script>
+    
 <div id="trialBadge">Trial: <span id="daysLeft">--</span> days left</div>
 
 <div id="expiryLock">
