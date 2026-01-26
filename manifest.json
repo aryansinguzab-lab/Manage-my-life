@@ -1,6 +1,6 @@
 {
   "name": "Life Manager",
-  "short_name": "LifeMgr",
+  "short_name": "Life Manager",
   "start_url": "/Manage-my-life/",
   "display": "standalone",
   "background_color": "#ffffff",
